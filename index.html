@@ -1,0 +1,2954 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WanderWise — Your AI-Powered Travel Companion</title>
+  
+  <!-- Fonts & Tailwind CSS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            teal: '#14B8A6',
+            navy: '#1A1A2E',
+            coral: '#FF8E72',
+            grey: '#F8F9FA',
+            tealPrimary: '#14B8A6',
+            navyDark: '#1A1A2E',
+            coralAccent: '#FF8E72'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    :root {
+      --teal: #14B8A6;
+      --navy: #1A1A2E;
+      --coral: #FF8E72;
+      --grey: #F8F9FA;
+    }
+    /* Styling & Custom transitions */
+    .reveal-item {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal-item.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Simple CSS illustration styling */
+    .mountain-clip-1 {
+      clip-path: polygon(50% 15%, 0% 100%, 100% 100%);
+    }
+    .mountain-clip-2 {
+      clip-path: polygon(35% 30%, 0% 100%, 90% 100%);
+    }
+    .mountain-clip-3 {
+      clip-path: polygon(75% 25%, 20% 100%, 100% 100%);
+    }
+    .beach-curve {
+      clip-path: ellipse(80% 60% at 50% 100%);
+    }
+
+    /* Professional Polish Theme Custom Classes */
+    .bg-teal { background-color: var(--teal); }
+    .bg-navy { background-color: var(--navy); }
+    .bg-coral { background-color: var(--coral); }
+    .text-teal { color: var(--teal); }
+    .text-navy { color: var(--navy); }
+    .border-teal { border-color: var(--teal); }
+    
+    .sidebar-link:hover {
+      background-color: rgba(20, 184, 166, 0.08);
+      color: var(--teal);
+    }
+    .card-shadow {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    .nav-active {
+      border-right: 3px solid var(--teal) !important;
+      background-color: rgba(20, 184, 166, 0.05) !important;
+      color: var(--teal) !important;
+      font-weight: 600 !important;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased text-slate-800 bg-slate-50 overflow-x-hidden">
+
+  <!-- ==================== TOAST FLOATING CONTAINER ==================== -->
+  <div id="toast-wrapper" class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none w-80"></div>
+
+  <!-- ==================== GLOBAL APP LOADER ==================== -->
+  <div id="app-loader" class="fixed inset-0 bg-[#1A1A2E] z-50 flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-500">
+    <div class="relative flex items-center justify-center">
+      <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#14B8A6]"></div>
+      <svg class="absolute w-6 h-6 text-[#FF8E72] animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+      </svg>
+    </div>
+    <p id="loader-text" class="mt-4 text-white font-display text-sm tracking-wider uppercase animate-pulse">Syncing smart traveler cores...</p>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- VIEW 1: LANDING PAGE                                       -->
+  <!-- ========================================================== -->
+  <div id="view-landing" class="block">
+    
+    <!-- Header/Navbar -->
+    <header id="landing-header" class="fixed top-0 left-0 w-full z-40 transition-all duration-300 border-b border-transparent">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-2 group">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#FF8E72] flex items-center justify-center text-white shadow-md">
+            <svg class="w-5 h-5 transform group-hover:rotate-45 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </div>
+          <span class="font-display font-bold text-2xl tracking-tight text-white transition-colors duration-300" id="brand-title">WanderWise</span>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-8">
+          <a href="#features" class="text-slate-300 hover:text-[#14B8A6] transition-colors text-sm font-medium">Features</a>
+          <a href="#how-it-works" class="text-slate-300 hover:text-[#14B8A6] transition-colors text-sm font-medium">How It Works</a>
+          <a href="#pricing" class="text-slate-300 hover:text-[#14B8A6] transition-colors text-sm font-medium">Pricing</a>
+          <a href="#testimonials" class="text-slate-300 hover:text-[#14B8A6] transition-colors text-sm font-medium">Reviews</a>
+        </nav>
+
+        <!-- CTA Action -->
+        <div class="hidden md:flex items-center gap-4">
+          <button onclick="switchToAppShell()" class="px-5 py-2.5 rounded-xl bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white font-medium text-sm transition-all shadow-lg hover:shadow-[#14B8A6]/30 cursor-pointer">
+            Get Started Free
+          </button>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button id="mobile-toggle" onclick="toggleMobileMenu()" class="md:hidden text-white p-2">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="hamburger-icon">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Dropdown Nav -->
+      <div id="mobile-nav" class="hidden md:hidden bg-[#1A1A2E]/95 backdrop-blur-md border-b border-white/10 px-4 py-6 space-y-4">
+        <a href="#features" onclick="toggleMobileMenu()" class="block text-slate-300 hover:text-[#14B8A6] font-medium py-2">Features</a>
+        <a href="#how-it-works" onclick="toggleMobileMenu()" class="block text-slate-300 hover:text-[#14B8A6] font-medium py-2">How It Works</a>
+        <a href="#pricing" onclick="toggleMobileMenu()" class="block text-slate-300 hover:text-[#14B8A6] font-medium py-2">Pricing</a>
+        <a href="#testimonials" onclick="toggleMobileMenu()" class="block text-slate-300 hover:text-[#14B8A6] font-medium py-2">Reviews</a>
+        <button onclick="switchToAppShell()" class="w-full text-center px-4 py-3 rounded-xl bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white font-medium transition-all block">
+          Get Started
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen bg-[#1A1A2E] flex items-center pt-24 overflow-hidden">
+      <!-- Glow Gradients -->
+      <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-[#14B8A6]/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-[#FF8E72]/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+        <!-- Hero Text -->
+        <div class="lg:col-span-6 space-y-6 text-center lg:text-left">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[#14B8A6] text-xs font-semibold uppercase tracking-wider">
+            ✨ Your AI-Powered Travel Companion
+          </span>
+          <h1 class="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-white leading-tight">
+            Explore the World <br class="hidden sm:inline" />
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#14B8A6] to-[#FF8E72]">Smarter</span> with Globi
+          </h1>
+          <p class="text-slate-300 text-lg max-w-xl mx-auto lg:mx-0">
+            Ditch the endless tabs. Plan modular itineraries, track live spending, and interact with Globi—your virtual concierge that delivers local wisdom 24/7.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <button onclick="switchToAppShell()" class="px-8 py-4 rounded-xl bg-gradient-to-r from-[#14B8A6] to-[#14B8A6]/80 hover:from-[#14B8A6]/90 hover:to-[#14B8A6]/70 text-white font-semibold shadow-lg shadow-[#14B8A6]/20 transform hover:-translate-y-0.5 transition-all text-center">
+              Start Your Journey
+            </button>
+            <a href="#how-it-works" class="px-8 py-4 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 font-medium transition-all text-center">
+              How It Works
+            </a>
+          </div>
+          <!-- Travel Social Proof -->
+          <div class="pt-6 border-t border-white/5 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-slate-400">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[#FF8E72]">✔</span> Instant 10-Second Generation
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[#FF8E72]">✔</span> Local Offline Packing Sync
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[#FF8E72]">✔</span> 100% Free Trial Account
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero CSS Vector Illustration -->
+        <div class="lg:col-span-6">
+          <div class="relative w-full h-[320px] sm:h-[400px] lg:h-[450px] rounded-2xl bg-gradient-to-b from-[#1E1E38] via-[#103445] to-[#14B8A6]/10 shadow-2xl overflow-hidden border border-white/10">
+            <!-- Grid Underlay -->
+            <div class="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] opacity-80"></div>
+            
+            <!-- Glowing Moon / Rising Sun -->
+            <div class="absolute bottom-28 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-gradient-to-t from-[#FF8E72] to-[#FFD0A4] opacity-85 shadow-[0_0_50px_rgba(255,142,114,0.3)] animate-pulse"></div>
+            
+            <!-- Mountains layers via clip paths -->
+            <div class="mountain-clip-1 absolute bottom-0 left-0 w-[70%] h-[240px] bg-gradient-to-t from-[#0d121c] to-[#1f2b45] opacity-70"></div>
+            <div class="mountain-clip-3 absolute bottom-0 right-0 w-[65%] h-[200px] bg-gradient-to-t from-[#0b1424] to-[#25394F] opacity-85"></div>
+            <div class="mountain-clip-2 absolute bottom-0 left-[20%] w-[60%] h-[150px] bg-gradient-to-t from-[#0e5163] to-[#14B8A6]/60"></div>
+            
+            <!-- Beach shoreline curves -->
+            <div class="beach-curve absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#FF8E72]/40 via-[#14B8A6]/10 to-transparent"></div>
+            <div class="absolute bottom-0 left-0 right-0 h-6 bg-[#1A1A2E]/90"></div>
+
+            <!-- CSS Airplane Flying with Dashed Trail -->
+            <div class="absolute top-10 left-8 right-8 h-20">
+              <svg class="w-full h-full overflow-visible" fill="none" viewBox="0 0 300 100">
+                <path d="M10,80 C80,20 220,10 280,50" stroke="rgba(255,142,114,0.4)" stroke-width="2" stroke-dasharray="6,4"></path>
+                <g transform="translate(280, 50) rotate(35)">
+                  <!-- Plane shape -->
+                  <path d="M-6,-3 L6,0 L-6,3 Z" fill="#FF8E72"></path>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Mini Sailboat floating -->
+            <div class="absolute bottom-10 left-[35%] animate-bounce duration-[3000ms]">
+              <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L4 14H12V2Z" fill="#FFF" />
+                <path d="M13 5V14H20L13 5Z" fill="#FF8E72" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 Features Grid -->
+    <section id="features" class="py-24 bg-white scroll-mt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto space-y-4 mb-16">
+          <span class="text-[#14B8A6] text-sm font-semibold uppercase tracking-wider">Features Suite</span>
+          <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900">
+            Intelligent Tools Built for Modern Explorers
+          </h2>
+          <p class="text-slate-500 text-lg">
+            Say goodbye to scatterbrained planning. Everything you need is synthesized under one screen.
+          </p>
+        </div>
+
+        <!-- 6 Feature Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- Card 1 -->
+          <div class="reveal-item bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:border-[#14B8A6]/30 hover:shadow-xl hover:-translate-y-1 transition-all group duration-500">
+            <div class="w-12 h-12 rounded-xl bg-[#14B8A6]/10 text-[#14B8A6] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 mb-3">AI Trip Planner</h3>
+            <p class="text-slate-500 text-sm leading-relaxed">
+              Design comprehensive, theme-based schedules tailored to your travel speed, vibe, and companion setup.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="reveal-item bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:border-[#14B8A6]/30 hover:shadow-xl hover:-translate-y-1 transition-all group duration-500">
+            <div class="w-12 h-12 rounded-xl bg-orange-100 text-[#FF8E72] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 mb-3">City Explorer</h3>
+            <p class="text-slate-500 text-sm leading-relaxed">
+              Discover localized landmarks, hidden street markets, and top-tier culinary treasures hidden from regular tour guides.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="reveal-item bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:border-[#14B8A6]/30 hover:shadow-xl hover:-translate-y-1 transition-all group duration-500">
+            <div class="w-12 h-12 rounded-xl bg-slate-900/5 text-[#1A1A2E] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 mb-3">Smart Budget Tracker</h3>
+            <p class="text-slate-500 text-sm leading-relaxed">
+              Track multi-currency costs in real-time. Understand lodging, transport, and adventure spending at a glance.
+            </p>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="reveal-item bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:border-[#14B8A6]/30 hover:shadow-xl hover:-translate-y-1 transition-all group duration-500">
+            <div class="w-12 h-12 rounded-xl bg-[#14B8A6]/10 text-[#14B8A6] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 mb-3">AI Concierge Globi</h3>
+            <p class="text-slate-500 text-sm leading-relaxed">
+              Need safe street recommendations, local vocabulary translations, or emergency clinic maps? Globi answers instantly.
+            </p>
+          </div>
+
+          <!-- Card 5 -->
+          <div class="reveal-item bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:border-[#14B8A6]/30 hover:shadow-xl hover:-translate-y-1 transition-all group duration-500">
+            <div class="w-12 h-12 rounded-xl bg-orange-100 text-[#FF8E72] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 mb-3">Travel Insights</h3>
+            <p class="text-slate-500 text-sm leading-relaxed">
+              Stay ahead with micro-warnings: sudden weather forecasts, local outlet parameters, and seasonal packing essentials.
+            </p>
+          </div>
+
+          <!-- Card 6 -->
+          <div class="reveal-item bg-slate-50 rounded-2xl p-8 border border-slate-100 hover:border-[#14B8A6]/30 hover:shadow-xl hover:-translate-y-1 transition-all group duration-500">
+            <div class="w-12 h-12 rounded-xl bg-slate-900/5 text-[#1A1A2E] flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 mb-3">Email Itineraries</h3>
+            <p class="text-slate-500 text-sm leading-relaxed">
+              Generate PDF maps and automated email briefs to share structured timelines easily with offline tripmates.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="py-24 bg-slate-50 scroll-mt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto space-y-4 mb-20 animate-fade">
+          <span class="text-[#FF8E72] text-sm font-semibold uppercase tracking-wider">Timeline</span>
+          <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900">
+            How WanderWise Navigates
+          </h2>
+          <p class="text-slate-500 text-lg">
+            Unlocking world-class adventures takes only four simple milestones.
+          </p>
+        </div>
+
+        <!-- 4-step Horizontal/vertical timeline -->
+        <div class="relative">
+          <!-- Central Line link -->
+          <div class="hidden lg:block absolute left-4 right-4 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-[#14B8A6] via-[#FF8E72] to-[#14B8A6] rounded-full opacity-30"></div>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-4 gap-12 relative z-10">
+            <!-- Step 1 -->
+            <div class="reveal-item flex flex-col items-center text-center space-y-4">
+              <div class="w-16 h-16 rounded-full bg-white text-[#14B8A6] font-display font-extrabold text-2xl shadow-xl flex items-center justify-center border-2 border-[#14B8A6]/20 relative">
+                1
+                <div class="absolute -inset-2 rounded-full border border-[#14B8A6]/10 animate-ping" style="animation-duration: 3s;"></div>
+              </div>
+              <h4 class="font-display font-bold text-lg text-slate-900">Set Your Vibe</h4>
+              <p class="text-slate-500 text-sm max-w-xs leading-relaxed">
+                Connect your timeline, target nodes, travel parties, budget caps, and dream active styles.
+              </p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="reveal-item flex flex-col items-center text-center space-y-4">
+              <div class="w-16 h-16 rounded-full bg-white text-[#FF8E72] font-display font-extrabold text-2xl shadow-xl flex items-center justify-center border-2 border-[#FF8E72]/20">
+                2
+              </div>
+              <h4 class="font-display font-bold text-lg text-slate-900">Generate Itinerary</h4>
+              <p class="text-slate-500 text-sm max-w-xs leading-relaxed">
+                Our smart system instantly cross-references micro-locations to structure a perfect daily flow.
+              </p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="reveal-item flex flex-col items-center text-center space-y-4">
+              <div class="w-16 h-16 rounded-full bg-white text-[#1A1A2E] font-display font-extrabold text-2xl shadow-xl flex items-center justify-center border-2 border-[#1A1A2E]/20">
+                3
+              </div>
+              <h4 class="font-display font-bold text-lg text-slate-900">Track & Sync</h4>
+              <p class="text-slate-500 text-sm max-w-xs leading-relaxed">
+                Watch expenses calibrate instantly. Connect on the fly using standard smart cache architectures.
+              </p>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="reveal-item flex flex-col items-center text-center space-y-4">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#14B8A6] to-[#FF8E72] text-white font-display font-extrabold text-2xl shadow-xl flex items-center justify-center">
+                4
+              </div>
+              <h4 class="font-display font-bold text-lg text-slate-900">Explore Confidently</h4>
+              <p class="text-slate-500 text-sm max-w-xs leading-relaxed">
+                Land ready and stress-free. Let Globi take the heavy coordination burden off your shoulders.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing section -->
+    <section id="pricing" class="py-24 bg-white scroll-mt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto space-y-4 mb-20">
+          <span class="text-[#14B8A6] text-sm font-semibold uppercase tracking-wider">Pricing Plans</span>
+          <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900">
+            A Plan Tailored for Every Wanderer
+          </h2>
+          <p class="text-slate-500 text-lg">
+            Start completely free or unlock priority concierge servers worldwide.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+          <!-- Free Plan -->
+          <div class="reveal-item rounded-2xl border border-slate-100 p-8 bg-slate-50 flex flex-col justify-between hover:shadow-xl transition-all duration-300">
+            <div class="space-y-6">
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Essential</span>
+                <h4 class="font-display font-extrabold text-2xl text-slate-900 mt-1">Free Tier</h4>
+              </div>
+              <div class="flex items-baseline text-slate-900">
+                <span class="text-3xl font-extrabold font-display">$</span>
+                <span class="text-5xl font-extrabold font-display tracking-tight">0</span>
+                <span class="ml-1 text-slate-500 text-sm">/forever</span>
+              </div>
+              <p class="text-slate-400 text-sm">Perfect for solitary adventure planners mapping basic spots.</p>
+              
+              <ul class="space-y-3.5 text-sm text-slate-500">
+                <li class="flex items-center gap-2.5">
+                  <span class="text-[#14B8A6] font-bold">✔</span> 1 Active Smart Trip
+                </li>
+                <li class="flex items-center gap-2.5 opacity-50">
+                  <span class="text-slate-400">✖</span> Standard Budget Snapshot
+                </li>
+                <li class="flex items-center gap-2.5 opacity-50">
+                  <span class="text-slate-400">✖</span> Concierge Response Priority
+                </li>
+                <li class="flex items-center gap-2.5 opacity-50">
+                  <span class="text-slate-400">✖</span> High-end PDF Generation
+                </li>
+              </ul>
+            </div>
+            <button onclick="switchToAppShell()" class="mt-8 w-full py-3.5 rounded-xl border border-[#14B8A6] text-[#14B8A6] hover:bg-[#14B8A6] hover:text-white font-semibold transition-all cursor-pointer text-center text-sm">
+              Launch Free Shell
+            </button>
+          </div>
+
+          <!-- Explorer Plan (Featured) -->
+          <div class="reveal-item rounded-2xl border-2 border-[#14B8A6] p-8 bg-[#1A1A2E] text-white flex flex-col justify-between relative transform lg:-translate-y-4 shadow-xl shadow-[#14B8A6]/10">
+            <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#14B8A6] to-[#FF8E72] text-neutral-900 font-display font-bold text-[10px] tracking-widest uppercase px-3.5 py-1 rounded-full shadow-lg">
+              ★ Active Standard
+            </div>
+
+            <div class="space-y-6">
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-wider text-[#14B8A6]">PRO EXPLORER</span>
+                <h4 class="font-display font-extrabold text-2xl text-white mt-1">Explorer</h4>
+              </div>
+              <div class="flex items-baseline text-white">
+                <span class="text-3xl font-extrabold font-display">$</span>
+                <span class="text-5xl font-extrabold font-display tracking-tight">9.99</span>
+                <span class="ml-1 text-slate-400 text-sm">/month</span>
+              </div>
+              <p class="text-slate-400 text-sm">Tailored for regular tripmates demanding clean global tracks.</p>
+
+              <ul class="space-y-3.5 text-sm text-slate-300">
+                <li class="flex items-center gap-2.5">
+                  <span class="text-[#14B8A6] font-bold">✔</span> Unlimited Active Trips
+                </li>
+                <li class="flex items-center gap-2.5">
+                  <span class="text-[#14B8A6] font-bold">✔</span> Full Budget Snapping Engine
+                </li>
+                <li class="flex items-center gap-2.5">
+                  <span class="text-[#14B8A6] font-bold">✔</span> Standard Globi Assistant
+                </li>
+                <li class="flex items-center gap-2.5">
+                  <span class="text-[#14B8A6] font-bold">✔</span> Offline Data Caching
+                </li>
+              </ul>
+            </div>
+            <button onclick="switchToAppShell()" class="mt-8 w-full py-3.5 rounded-xl bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white font-semibold shadow-lg shadow-[#14B8A6]/30 transition-all cursor-pointer text-center text-sm">
+              Start 14-Day Trial
+            </button>
+          </div>
+
+          <!-- Wanderer Plan -->
+          <div class="reveal-item rounded-2xl border border-slate-100 p-8 bg-slate-50 flex flex-col justify-between hover:shadow-xl transition-all duration-300">
+            <div class="space-y-6">
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">POWER ELITE</span>
+                <h4 class="font-display font-extrabold text-2xl text-slate-900 mt-1">Wanderer</h4>
+              </div>
+              <div class="flex items-baseline text-slate-900">
+                <span class="text-3xl font-extrabold font-display">$</span>
+                <span class="text-5xl font-extrabold font-display tracking-tight">19.99</span>
+                <span class="ml-1 text-slate-500 text-sm">/month</span>
+              </div>
+              <p class="text-slate-400 text-sm">Comprehensive multi-currency platform for high-end nomad operations.</p>
+
+              <ul class="space-y-3.5 text-sm text-slate-500">
+                <li class="flex items-center gap-2.5">
+                  <span class="text-[#14B8A6] font-bold">✔</span> Unlimited Trips & Sync Panels
+                </li>
+                <li class="flex items-center gap-2.5">
+                  <span class="text-[#14B8A6] font-bold">✔</span> AI-Powered Budget Opti
+                </li>
+                <li class="flex items-center gap-2.5">
+                  <span class="text-[#14B8A6] font-bold">✔</span> Priority 24/7 Globi AI Concierge
+                </li>
+                <li class="flex items-center gap-2.5">
+                  <span class="text-[#14B8A6] font-bold">✔</span> PDF/Offline Maps Generation
+                </li>
+              </ul>
+            </div>
+            <button onclick="switchToAppShell()" class="mt-8 w-full py-3.5 rounded-xl bg-[#1A1A2E] hover:bg-slate-800 text-white font-semibold transition-all cursor-pointer text-center text-sm">
+              Inquire Corporate
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-24 bg-slate-50 scroll-mt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-3xl mx-auto space-y-4 mb-20 animate-fade">
+          <span class="text-[#FF8E72] text-sm font-semibold uppercase tracking-wider">Testimonials</span>
+          <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900">
+            Approved by Modern Voyagers
+          </h2>
+          <p class="text-slate-500 text-lg">
+            Hear from global nomads who restructured their holidays.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <!-- Card 1 -->
+          <div class="reveal-item bg-white p-8 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+            <div class="flex items-center gap-1 text-amber-400">
+              ★★★★★
+            </div>
+            <p class="text-slate-600 text-sm leading-relaxed italic">
+              "Globi pointed me to a phenomenal ramen house hidden inside a Kyoto subway terminal. It saved us nearly $40 on local activity maps alone!"
+            </p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-[#14B8A6]/20 flex items-center justify-center font-bold text-[#14B8A6]">TL</div>
+              <div>
+                <h5 class="font-bold text-slate-800 text-sm">Takahiro Sato</h5>
+                <span class="text-slate-400 text-xs font-medium">Digital Nomad</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="reveal-item bg-white p-8 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+            <div class="flex items-center gap-1 text-amber-400">
+              ★★★★★
+            </div>
+            <p class="text-slate-600 text-sm leading-relaxed italic">
+              "The budget rings are so convenient. I inputted our hotel and subway expenditures easily on mobile and avoided any nasty overdraft surprises."
+            </p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-[#FF8E72]/20 flex items-center justify-center font-bold text-[#FF8E72]">SW</div>
+              <div>
+                <h5 class="font-bold text-slate-800 text-sm">Samantha Wood</h5>
+                <span class="text-slate-400 text-xs font-medium">Eco Trekker</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="reveal-item bg-white p-8 rounded-2xl border border-slate-100 shadow-sm space-y-6">
+            <div class="flex items-center gap-1 text-amber-400">
+              ★★★★★
+            </div>
+            <p class="text-slate-600 text-sm leading-relaxed italic">
+              "The timeline planning feature let my family allocate Kinkaku-ji gardens and Arashiyama bamboo path slots elegantly with zero clutter."
+            </p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-[#1A1A2E]/20 flex items-center justify-center font-bold text-[#1A1A2E]">MK</div>
+              <div>
+                <h5 class="font-bold text-slate-800 text-sm">Marcus Vance</h5>
+                <span class="text-slate-400 text-xs font-medium">Family Explorer</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to action Banner -->
+    <section class="bg-[#1A1A2E] py-20 relative overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-r from-[#14B8A6]/20 via-transparent to-[#FF8E72]/10 pointer-events-none"></div>
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-8">
+        <h2 class="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl text-white leading-tight">
+          Ready to Explore Smarter?
+        </h2>
+        <p class="text-slate-300 text-lg max-w-xl mx-auto">
+          Sign up now to configure your customized travel schedules in our elegant client-side application sandbox.
+        </p>
+        <button onclick="switchToAppShell()" class="px-8 py-4 rounded-xl bg-gradient-to-r from-[#14B8A6] to-[#FF8E72] hover:from-[#14B8A6]/90 hover:to-[#FF8E72]/90 text-neutral-900 font-bold shadow-lg transform hover:-translate-y-0.5 transition-all cursor-pointer">
+          Launch WanderWise App Shell
+        </button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-12 border-b border-slate-800 pb-12 mb-12">
+        <div class="col-span-2 md:col-span-1 space-y-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-[#14B8A6] flex items-center justify-center text-white font-bold">W</div>
+            <span class="text-white font-display font-bold text-lg">WanderWise</span>
+          </div>
+          <p class="text-slate-500 text-xs leading-relaxed">
+            Structuring modular adventures with state-of-the-art web technology vectors.
+          </p>
+        </div>
+
+        <div>
+          <h6 class="text-white font-bold text-xs uppercase tracking-widest mb-4">Product</h6>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li><a href="#" class="hover:text-white transition-colors">Features</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">How It Works</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Pricing Options</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h6 class="text-white font-bold text-xs uppercase tracking-widest mb-4">Company</h6>
+          <ul class="space-y-2 text-sm text-slate-400">
+            <li><a href="#" class="hover:text-white transition-colors">About</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Press Room</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h6 class="text-white font-bold text-xs uppercase tracking-widest mb-4">Wanderlust</h6>
+          <p class="text-slate-500 text-xs leading-normal mb-3">Newsletter registration:</p>
+          <div class="flex gap-1.5">
+            <input type="email" placeholder="Email" class="w-full px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-white text-xs focus:outline-none focus:border-[#14B8A6]" />
+            <button onclick="alert('Thank you for subscribing to WanderWise newsletter!')" class="px-3 rounded-lg bg-[#14B8A6] text-white hover:bg-[#14B8A6]/80 text-xs">Join</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+        <div>© 2026 WanderWise. All rights reserved. Designed in Cosmic Slate style.</div>
+        <div class="flex gap-4">
+          <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
+          <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- VIEW 1.5: LOGIN SCREEN                                     -->
+  <!-- ========================================================== -->
+  <div id="view-login" class="hidden min-h-screen bg-[#1A1A2E] bg-gradient-to-br from-[#1A1A2E] via-[#103445] to-[#14B8A6]/30 relative flex flex-col items-center justify-center p-4 overflow-hidden select-none font-sans">
+    <!-- Glow Gradients -->
+    <div class="absolute top-0 right-0 w-[400px] h-[400px] bg-gradient-to-br from-[#14B8A6]/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-[#FF8E72]/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="w-full max-w-md bg-white rounded-2xl border border-slate-100 p-8 shadow-xl relative z-10 flex flex-col gap-6">
+      
+      <!-- Brand Logo & Header -->
+      <div class="flex flex-col items-center text-center space-y-2">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#14B8A6] to-[#FF8E72] flex items-center justify-center text-white shadow-md">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+        </div>
+        <h2 class="font-display font-extrabold text-2xl text-slate-900 tracking-tight">WanderWise</h2>
+        <p class="text-xs text-slate-400 font-medium">Your AI Travel Companion</p>
+      </div>
+
+      <!-- Sign In / Sign Up Selector tabs -->
+      <div class="flex border-b border-slate-100 mt-2">
+        <button id="auth-tab-signin" onclick="switchAuthTab('signin')" class="flex-grow pb-3 text-center text-sm font-bold text-[#14B8A6] border-b-2 border-[#14B8A6] focus:outline-none transition-all cursor-pointer">
+          Sign In
+        </button>
+        <button id="auth-tab-signup" onclick="switchAuthTab('signup')" class="flex-grow pb-3 text-center text-sm font-semibold text-slate-400 border-b-2 border-transparent hover:text-slate-600 focus:outline-none transition-all cursor-pointer">
+          Sign Up
+        </button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="form-signin" onsubmit="handleSignInSubmit(event)" class="space-y-4">
+        <div class="space-y-1">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Email Address</label>
+          <input type="email" id="signin-email" required class="w-full text-xs px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#14B8A6] focus:bg-white transition-all text-slate-800" placeholder="you@example.com" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Password</label>
+          <input type="password" id="signin-password" required class="w-full text-xs px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#14B8A6] focus:bg-white transition-all text-slate-800" placeholder="••••••••" />
+        </div>
+        <button type="submit" class="w-full py-3 bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-[#14B8A6]/20 cursor-pointer text-center block uppercase tracking-wider mt-2">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Sign Up Form (hidden by default) -->
+      <form id="form-signup" onsubmit="handleSignUpSubmit(event)" class="space-y-4 hidden">
+        <div class="space-y-1">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Full Name</label>
+          <input type="text" id="signup-fullname" required class="w-full text-xs px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#14B8A6] focus:bg-white transition-all text-slate-800" placeholder="Jane Doe" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Email Address</label>
+          <input type="email" id="signup-email" required class="w-full text-xs px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#14B8A6] focus:bg-white transition-all text-slate-800" placeholder="you@example.com" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Password</label>
+          <input type="password" id="signup-password" minlength="6" required class="w-full text-xs px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#14B8A6] focus:bg-white transition-all text-slate-800" placeholder="Minimum 6 characters" />
+        </div>
+        <div class="space-y-1">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Confirm Password</label>
+          <input type="password" id="signup-confirm" minlength="6" required class="w-full text-xs px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#14B8A6] focus:bg-white transition-all text-slate-800" placeholder="••••••••" />
+        </div>
+        <button type="submit" class="w-full py-3 bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-[#14B8A6]/20 cursor-pointer text-center block uppercase tracking-wider mt-2">
+          Create Account
+        </button>
+      </form>
+
+      <!-- Divider -->
+      <div class="relative w-full flex items-center justify-center my-1 select-none">
+        <div class="flex-grow border-t border-slate-100"></div>
+        <span class="flex-shrink mx-4 text-xs font-semibold text-slate-400 uppercase tracking-widest block">or</span>
+        <div class="flex-grow border-t border-slate-100"></div>
+      </div>
+
+      <!-- Guest Trigger -->
+      <button onclick="continueAsGuest()" class="w-full py-3 border border-slate-200 hover:border-[#14B8A6] text-slate-600 hover:text-[#14B8A6] bg-white hover:bg-[#14B8A6]/5 font-bold rounded-xl text-xs transition-all text-center cursor-pointer uppercase tracking-wider block">
+        Continue as Guest
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- VIEW 1.75: ONBOARDING WIZARD                               -->
+  <!-- ========================================================== -->
+  <div id="view-onboarding" class="hidden min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+    <!-- Grid pattern background -->
+    <div class="absolute inset-0 bg-[radial-gradient(#14b8a610_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"></div>
+
+    <div class="w-full max-w-2xl bg-white rounded-2xl border border-slate-100 p-8 shadow-xl relative z-10 flex flex-col gap-6 my-8">
+      
+      <!-- Logo Indicator Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-[#14B8A6] flex items-center justify-center text-white font-bold">W</div>
+          <span class="font-semibold text-lg tracking-tight text-[#1A1A2E]">WanderWise Wizard</span>
+        </div>
+        <span id="onboard-step-indicator" class="text-xs px-2.5 py-1 rounded bg-[#14B8A6]/10 text-[#14B8A6] font-bold tracking-wider uppercase">Step 1 of 4</span>
+      </div>
+
+      <!-- Progress Line bar -->
+      <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-2">
+        <div id="onboard-progress-bar" class="h-full bg-gradient-to-r from-[#14B8A6] to-[#FF8E72] transition-all duration-300" style="width: 25%"></div>
+      </div>
+
+      <!-- STEP 1 — BASICS -->
+      <div id="onboard-step-1" class="space-y-6">
+        <div class="space-y-1">
+          <h3 class="font-bold text-lg text-slate-800">Establish the Basics</h3>
+          <p class="text-slate-400 text-xs">Let's custom calibrate your voyager credentials.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Full Name</label>
+            <input type="text" id="onboard-name" class="w-full text-xs px-3.5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#14B8A6] focus:bg-white text-slate-800" placeholder="Your Display Name" />
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Date of Birth</label>
+            <input type="date" id="onboard-dob" class="w-full text-xs px-3.5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#14B8A6] focus:bg-white text-slate-800" />
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Home City</label>
+          <input type="text" id="onboard-homecity" class="w-full text-xs px-3.5 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#14B8A6] focus:bg-white text-slate-800" placeholder="e.g. Mumbai" />
+          
+          <!-- Small recommendation list of popular cities -->
+          <div class="flex flex-wrap gap-1.5 pt-1">
+            <button onclick="setOnboardCity('Mumbai')" class="px-2 py-1 border border-slate-200 text-slate-500 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded text-[10px] font-medium transition-colors cursor-pointer bg-slate-50">Mumbai</button>
+            <button onclick="setOnboardCity('Delhi')" class="px-2 py-1 border border-slate-200 text-slate-500 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded text-[10px] font-medium transition-colors cursor-pointer bg-slate-50">Delhi</button>
+            <button onclick="setOnboardCity('Bengaluru')" class="px-2 py-1 border border-slate-200 text-slate-500 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded text-[10px] font-medium transition-colors cursor-pointer bg-slate-50">Bengaluru</button>
+            <button onclick="setOnboardCity('New York')" class="px-2 py-1 border border-slate-200 text-slate-500 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded text-[10px] font-medium transition-colors cursor-pointer bg-slate-50">New York</button>
+            <button onclick="setOnboardCity('London')" class="px-2 py-1 border border-slate-200 text-slate-500 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded text-[10px] font-medium transition-colors cursor-pointer bg-slate-50">London</button>
+            <button onclick="setOnboardCity('Paris')" class="px-2 py-1 border border-slate-200 text-slate-500 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded text-[10px] font-medium transition-colors cursor-pointer bg-slate-50">Paris</button>
+            <button onclick="setOnboardCity('Tokyo')" class="px-2 py-1 border border-slate-200 text-slate-500 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded text-[10px] font-medium transition-colors cursor-pointer bg-slate-50">Tokyo</button>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Preferred Currency</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="setOnboardCurrency('INR')" id="onboard-curr-INR" class="onboard-currency-btn py-3 rounded-xl border-2 border-slate-200 hover:border-[#14B8A6]/40 text-sm font-semibold text-slate-600 transition-all font-mono shadow-sm bg-white cursor-pointer active:scale-95">INR (₹)</button>
+            <button onclick="setOnboardCurrency('USD')" id="onboard-curr-USD" class="onboard-currency-btn py-3 rounded-xl border-2 border-slate-200 hover:border-[#14B8A6]/40 text-sm font-semibold text-slate-600 transition-all font-mono shadow-sm bg-white cursor-pointer active:scale-95">USD ($)</button>
+            <button onclick="setOnboardCurrency('EUR')" id="onboard-curr-EUR" class="onboard-currency-btn py-3 rounded-xl border-2 border-slate-200 hover:border-[#14B8A6]/40 text-sm font-semibold text-slate-600 transition-all font-mono shadow-sm bg-white cursor-pointer active:scale-95">EUR (€)</button>
+            <button onclick="setOnboardCurrency('GBP')" id="onboard-curr-GBP" class="onboard-currency-btn py-3 rounded-xl border-2 border-slate-200 hover:border-[#14B8A6]/40 text-sm font-semibold text-slate-600 transition-all font-mono shadow-sm bg-white cursor-pointer active:scale-95">GBP (£)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 — TRAVEL STYLE -->
+      <div id="onboard-step-2" class="space-y-6 hidden">
+        <div class="space-y-1">
+          <h3 class="font-bold text-lg text-slate-800">Choose Your Travel Style & Speed</h3>
+          <p class="text-slate-400 text-xs">Pick one core style and select the average stay length of your holidays.</p>
+        </div>
+
+        <!-- Travel Style Cards Grid -->
+        <div class="space-y-2.5">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Travel Style (Pick One)</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2">
+            
+            <button onclick="setOnboardStyle('Adventure')" id="style-card-Adventure" class="onboard-style-card p-4 rounded-xl border-2 border-slate-150 hover:border-[#14B8A6]/45 bg-white text-left transition-all hover:bg-slate-50 flex gap-3 text-slate-700 cursor-pointer focus:outline-none">
+              <span class="text-2xl pt-0.5 shrink-0">🧗</span>
+              <div class="space-y-0.5">
+                <span class="text-xs font-bold block text-slate-800">Adventure</span>
+                <span class="text-[10px] text-slate-400 leading-normal block text-slate-500">High-octane trails and thrilling peaks.</span>
+              </div>
+            </button>
+
+            <button onclick="setOnboardStyle('Relaxation')" id="style-card-Relaxation" class="onboard-style-card p-4 rounded-xl border-2 border-slate-150 hover:border-[#14B8A6]/45 bg-white text-left transition-all hover:bg-slate-50 flex gap-3 text-slate-700 cursor-pointer focus:outline-none">
+              <span class="text-2xl pt-0.5 shrink-0">🏖️</span>
+              <div class="space-y-0.5">
+                <span class="text-xs font-bold block text-slate-800">Relaxation</span>
+                <span class="text-[10px] text-slate-400 leading-normal block text-slate-500">Serene shores and quiet retreats.</span>
+              </div>
+            </button>
+
+            <button onclick="setOnboardStyle('Cultural')" id="style-card-Cultural" class="onboard-style-card p-4 rounded-xl border-2 border-slate-150 hover:border-[#14B8A6]/45 bg-white text-left transition-all hover:bg-slate-50 flex gap-3 text-slate-700 cursor-pointer focus:outline-none">
+              <span class="text-2xl pt-0.5 shrink-0">⛩️</span>
+              <div class="space-y-0.5">
+                <span class="text-xs font-bold block text-slate-800">Cultural</span>
+                <span class="text-[10px] text-slate-400 leading-normal block text-slate-500">Historic shrines and rich heritage.</span>
+              </div>
+            </button>
+
+            <button onclick="setOnboardStyle('Foodie')" id="style-card-Foodie" class="onboard-style-card p-4 rounded-xl border-2 border-slate-150 hover:border-[#14B8A6]/45 bg-white text-left transition-all hover:bg-slate-50 flex gap-3 text-slate-700 cursor-pointer focus:outline-none">
+              <span class="text-2xl pt-0.5 shrink-0">🍕</span>
+              <div class="space-y-0.5">
+                <span class="text-xs font-bold block text-slate-800">Foodie</span>
+                <span class="text-[10px] text-slate-400 leading-normal block text-slate-500">Street food markets & Michelin.</span>
+              </div>
+            </button>
+
+            <button onclick="setOnboardStyle('Backpacker')" id="style-card-Backpacker" class="onboard-style-card p-4 rounded-xl border-2 border-slate-150 hover:border-[#14B8A6]/45 bg-white text-left transition-all hover:bg-slate-50 flex gap-3 text-slate-700 cursor-pointer focus:outline-none">
+              <span class="text-2xl pt-0.5 shrink-0">🎒</span>
+              <div class="space-y-0.5">
+                <span class="text-xs font-bold block text-slate-800">Backpacker</span>
+                <span class="text-[10px] text-slate-400 leading-normal block text-slate-500">Low-budget hostels and winding rails.</span>
+              </div>
+            </button>
+
+            <button onclick="setOnboardStyle('Luxury')" id="style-card-Luxury" class="onboard-style-card p-4 rounded-xl border-2 border-slate-150 hover:border-[#14B8A6]/45 bg-white text-left transition-all hover:bg-slate-50 flex gap-3 text-slate-700 cursor-pointer focus:outline-none">
+              <span class="text-2xl pt-0.5 shrink-0">💎</span>
+              <div class="space-y-0.5">
+                <span class="text-xs font-bold block text-slate-800">Luxury</span>
+                <span class="text-[10px] text-slate-400 leading-normal block text-slate-500">Premium treatment and high-end spas.</span>
+              </div>
+            </button>
+
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Preferred Trip Duration</label>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button onclick="setOnboardDuration('Weekend')" id="duration-btn-Weekend" class="onboard-duration-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none">Weekend</button>
+            <button onclick="setOnboardDuration('1 week')" id="duration-btn-1week" class="onboard-duration-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none">1 week</button>
+            <button onclick="setOnboardDuration('2 weeks')" id="duration-btn-2weeks" class="onboard-duration-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none">2 weeks</button>
+            <button onclick="setOnboardDuration('1 month+')" id="duration-btn-1month" class="onboard-duration-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none">1 month+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3 — BUDGET & STAY -->
+      <div id="onboard-step-3" class="space-y-6 hidden">
+        <div class="space-y-1">
+          <h3 class="font-bold text-lg text-slate-800">Calibrate Budget & Lodging Preferences</h3>
+          <p class="text-slate-400 text-xs">Choose spend parameters (adjusted live to your chosen currency) and select preferred booking forms.</p>
+        </div>
+
+        <!-- Budget Tier Selector Cards -->
+        <div class="space-y-2">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Budget Tier (Pick One)</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            
+            <button onclick="setOnboardBudget('Budget')" id="budget-card-Budget" class="onboard-budget-card p-4 rounded-xl border-2 border-slate-150 hover:border-[#14B8A6]/45 bg-white text-left transition-all hover:bg-slate-50 flex flex-col gap-1 text-slate-700 cursor-pointer focus:outline-none">
+              <span class="text-lg">💸</span>
+              <span class="text-xs font-bold text-slate-800 block text-slate-800">Budget Mode</span>
+              <span id="onboard-hint-budget" class="text-[10px] text-slate-400 leading-normal block text-slate-400">Approx. ₹3,000 / day</span>
+            </button>
+
+            <button onclick="setOnboardBudget('Mid-range')" id="budget-card-Mid-range" class="onboard-budget-card p-4 rounded-xl border-2 border-slate-150 hover:border-[#14B8A6]/45 bg-white text-left transition-all hover:bg-slate-50 flex flex-col gap-1 text-slate-700 cursor-pointer focus:outline-none">
+              <span class="text-lg">⚖️</span>
+              <span class="text-xs font-bold text-slate-800 block text-slate-800">Mid-range Mode</span>
+              <span id="onboard-hint-midrange" class="text-[10px] text-slate-400 leading-normal block text-slate-400">Approx. ₹10,000 / day</span>
+            </button>
+
+            <button onclick="setOnboardBudget('Luxury')" id="budget-card-Luxury" class="onboard-budget-card p-4 rounded-xl border-2 border-slate-150 hover:border-[#14B8A6]/45 bg-white text-left transition-all hover:bg-slate-50 flex flex-col gap-1 text-slate-700 cursor-pointer focus:outline-none">
+              <span class="text-lg">👑</span>
+              <span class="text-xs font-bold text-slate-850 block">Luxury Premium</span>
+              <span id="onboard-hint-luxury" class="text-[10px] text-slate-400 leading-normal block text-slate-400">Approx. ₹30,000+ / day</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Accommodation Multi-select Chips -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Accommodation Form (Multi-select)</label>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="toggleOnboardAccom('Hostel')" id="accom-chip-Hostel" class="onboard-accom-chip px-4 py-2 bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded-xl text-xs font-semibold transition-all cursor-pointer focus:outline-none">🏢 Hostel</button>
+            <button onclick="toggleOnboardAccom('Hotel')" id="accom-chip-Hotel" class="onboard-accom-chip px-4 py-2 bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded-xl text-xs font-semibold transition-all cursor-pointer focus:outline-none">🏨 Hotel</button>
+            <button onclick="toggleOnboardAccom('Airbnb')" id="accom-chip-Airbnb" class="onboard-accom-chip px-4 py-2 bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded-xl text-xs font-semibold transition-all cursor-pointer focus:outline-none">🏠 Airbnb</button>
+            <button onclick="toggleOnboardAccom('Resort')" id="accom-chip-Resort" class="onboard-accom-chip px-4 py-2 bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded-xl text-xs font-semibold transition-all cursor-pointer focus:outline-none">🏖️ Resort</button>
+            <button onclick="toggleOnboardAccom('Homestay')" id="accom-chip-Homestay" class="onboard-accom-chip px-4 py-2 bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded-xl text-xs font-semibold transition-all cursor-pointer focus:outline-none">🏕️ Homestay</button>
+          </div>
+        </div>
+
+        <!-- Travel Companions Toggle Buttons -->
+        <div class="space-y-2">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Travel Companions</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="setOnboardCompanions('Solo')" id="companions-btn-Solo" class="onboard-companions-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none">Solo 🧗</button>
+            <button onclick="setOnboardCompanions('Couple')" id="companions-btn-Couple" class="onboard-companions-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none">Couple 💑</button>
+            <button onclick="setOnboardCompanions('Family')" id="companions-btn-Family" class="onboard-companions-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none">Family 👨‍👩‍👧</button>
+            <button onclick="setOnboardCompanions('Friends')" id="companions-btn-Friends" class="onboard-companions-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none">Friends 🍻</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4 — PREFERENCES & RESTRICTIONS -->
+      <div id="onboard-step-4" class="space-y-5 hidden">
+        <div class="space-y-1">
+          <h3 class="font-bold text-lg text-slate-800">Identify Specialized Preferences</h3>
+          <p class="text-slate-400 text-xs">Customize food needs, core interests, secondary languages and physical mobility limits.</p>
+        </div>
+
+        <!-- Food preference multi-select -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Food Preferences (Multi-select)</label>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="toggleOnboardFood('No Preference')" id="food-chip-NoPref" class="onboard-food-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">No Preference</button>
+            <button onclick="toggleOnboardFood('Vegetarian')" id="food-chip-Vegetarian" class="onboard-food-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🍀 Vegetarian</button>
+            <button onclick="toggleOnboardFood('Vegan')" id="food-chip-Vegan" class="onboard-food-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🌱 Vegan</button>
+            <button onclick="toggleOnboardFood('Halal')" id="food-chip-Halal" class="onboard-food-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🕌 Halal</button>
+            <button onclick="toggleOnboardFood('Kosher')" id="food-chip-Kosher" class="onboard-food-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">✡️ Kosher</button>
+            <button onclick="toggleOnboardFood('Gluten-Free')" id="food-chip-GlutenFree" class="onboard-food-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🌾 Gluten-Free</button>
+          </div>
+        </div>
+
+        <!-- Interests Chips multi-select -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Core Travel Interests (Multi-select)</label>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="toggleOnboardInterest('Beaches')" id="interest-chip-Beaches" class="onboard-interest-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🏖️ Beaches</button>
+            <button onclick="toggleOnboardInterest('Mountains')" id="interest-chip-Mountains" class="onboard-interest-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">⛰️ Mountains</button>
+            <button onclick="toggleOnboardInterest('History')" id="interest-chip-History" class="onboard-interest-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🏛️ History</button>
+            <button onclick="toggleOnboardInterest('Nightlife')" id="interest-chip-Nightlife" class="onboard-interest-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🍹 Nightlife</button>
+            <button onclick="toggleOnboardInterest('Food')" id="interest-chip-Food" class="onboard-interest-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-650 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🍜 Food</button>
+            <button onclick="toggleOnboardInterest('Shopping')" id="interest-chip-Shopping" class="onboard-interest-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🛍️ Shopping</button>
+            <button onclick="toggleOnboardInterest('Wildlife')" id="interest-chip-Wildlife" class="onboard-interest-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-605 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🦁 Wildlife</button>
+            <button onclick="toggleOnboardInterest('Adventure Sports')" id="interest-chip-AdventureSports" class="onboard-interest-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-605 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">🚴 Adventure Sports</button>
+          </div>
+        </div>
+
+        <!-- Languages spoken -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Languages Spoken (Multi-select)</label>
+          <div class="flex flex-wrap gap-1.5">
+            <button onclick="toggleOnboardLang('English')" id="lang-chip-English" class="onboard-lang-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">English</button>
+            <button onclick="toggleOnboardLang('Hindi')" id="lang-chip-Hindi" class="onboard-lang-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">Hindi</button>
+            <button onclick="toggleOnboardLang('Spanish')" id="lang-chip-Spanish" class="onboard-lang-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">Spanish</button>
+            <button onclick="toggleOnboardLang('French')" id="lang-chip-French" class="onboard-lang-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">French</button>
+            <button onclick="toggleOnboardLang('Japanese')" id="lang-chip-Japanese" class="onboard-lang-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">Japanese</button>
+            <button onclick="toggleOnboardLang('German')" id="lang-chip-German" class="onboard-lang-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer">German</button>
+          </div>
+        </div>
+
+        <!-- Mobility Level slider -->
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Physical Mobility Level</label>
+            <span id="onboard-mobility-label" class="text-xs font-bold text-[#14B8A6] uppercase tracking-wider">Moderate</span>
+          </div>
+          <!-- 3-zone control selection buttons -->
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="setOnboardMobility('Low')" id="mobility-btn-Low" class="onboard-mobility-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer transition-colors focus:outline-none">Low</button>
+            <button onclick="setOnboardMobility('Moderate')" id="mobility-btn-Moderate" class="onboard-mobility-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer transition-colors focus:outline-none">Moderate</button>
+            <button onclick="setOnboardMobility('High')" id="mobility-btn-High" class="onboard-mobility-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer transition-colors focus:outline-none flex-grow">High</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINAL STEP SUMMARY CARD -->
+      <div id="onboard-step-summary" class="space-y-6 hidden">
+        <div class="space-y-1 text-center border-b border-slate-100 pb-4">
+          <span class="text-3xl">🎉</span>
+          <h3 class="font-bold text-xl text-slate-900 leading-tight">Your Custom Travel profile is Synthesized!</h3>
+          <p class="text-slate-400 text-xs font-medium">Review your travel specs before entering WanderWise dashboard.</p>
+        </div>
+
+        <!-- Summary list mapping -->
+        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-6 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-200/50 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block">Traveler Name:</span>
+              <span id="summary-fullname-val" class="text-xs text-slate-800 font-bold">Julian Smith</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block">Home City:</span>
+              <span id="summary-homecity-val" class="text-xs text-slate-800 font-bold">Mumbai</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="p-4 bg-white rounded-xl border border-slate-200/40 text-left">
+              <span class="text-[9px] font-bold text-slate-400 block uppercase tracking-wider mb-1">Synthesized Persona</span>
+              <span id="summary-persona-val" class="text-xs font-extrabold text-[#14B8A6] bg-[#14B8A6]/10 px-2.5 py-1 rounded">Slow Culture Luxury Explorer</span>
+            </div>
+
+            <div class="p-4 bg-white rounded-xl border border-slate-200/40 text-left">
+              <span class="text-[9px] font-bold text-slate-400 block uppercase tracking-wider mb-2">Preferred Currency & Cap</span>
+              <span id="summary-currency-val" class="text-xs font-extrabold text-[#FF8E72] bg-[#FF8E72]/10 px-2.5 py-1 rounded">INR (Capacity: ₹10,000)</span>
+            </div>
+          </div>
+
+          <!-- Bullet characteristics breakdown -->
+          <div class="space-y-2 text-xs text-slate-600 border-t border-slate-200/50 pt-3">
+            <div class="flex justify-between"><strong class="text-slate-400">Accommodation Vibe:</strong> <span id="summary-lodging-val" class="text-slate-800 font-bold">Hostel, Airbnb</span></div>
+            <div class="flex justify-between"><strong class="text-slate-400">Trip duration parameters:</strong> <span id="summary-duration-val" class="text-slate-800 font-bold">1 week</span></div>
+            <div class="flex justify-between"><strong class="text-slate-400">Dietary criteria:</strong> <span id="summary-diet-val" class="text-slate-800 font-bold">Vegetarian</span></div>
+            <div class="flex justify-between"><strong class="text-slate-400">Key Interests:</strong> <span id="summary-interests-val" class="text-slate-800 font-bold">History, Gardens, Temples</span></div>
+            <div class="flex justify-between"><strong class="text-slate-500">Mobility Range & Languages:</strong> <span id="summary-mobility-val" class="text-slate-800 font-bold">Moderate (English, Japanese Spoken)</span></div>
+          </div>
+
+          <!-- Dynamic budget Split Pie preview as linear tags -->
+          <div class="space-y-2 border-t border-slate-200/50 pt-3">
+            <span class="text-[9px] font-bold text-slate-400 block uppercase tracking-wider">Dynamic Budget Allocation split</span>
+            <div class="w-full h-3.5 rounded-full overflow-hidden flex font-mono text-[9px] text-white font-semibold shadow-sm">
+              <div class="bg-indigo-500 flex items-center justify-center transition-all" style="width: 40%" title="Stay (40%)">40%</div>
+              <div class="bg-[#14B8A6] flex items-center justify-center transition-all" style="width: 25%" title="Food (25%)">25%</div>
+              <div class="bg-amber-500 flex items-center justify-center transition-all" style="width: 15%" title="Transport (15%)">15%</div>
+              <div class="bg-[#FF8E72] flex items-center justify-center transition-all" style="width: 15%" title="Activities (15%)">15%</div>
+              <div class="bg-slate-550 flex items-center justify-center transition-all" style="width: 5%" title="Shopping (5%)">5%</div>
+            </div>
+            <!-- Labels color guide -->
+            <div class="grid grid-cols-5 gap-1.5 text-center text-[9px] tracking-wider text-slate-400 uppercase font-semibold">
+              <div><span class="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1"></span>Stay</div>
+              <div><span class="inline-block w-1.5 h-1.5 rounded-full bg-[#14B8A6] mr-1"></span>Food</div>
+              <div><span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-500 mr-1"></span>Trans</div>
+              <div><span class="inline-block w-1.5 h-1.5 rounded-full bg-[#FF8E72] mr-1"></span>Acts</div>
+              <div><span class="inline-block w-1.5 h-1.5 rounded-full bg-slate-400 mr-1"></span>Shop</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Footer control panel -->
+      <div class="flex items-center justify-between border-t border-slate-100 pt-5 mt-2">
+        <button id="onboard-back-btn" onclick="onboardStepBack()" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-500 hover:text-[#14B8A6] font-semibold text-xs transition-colors cursor-pointer disabled:opacity-40 disabled:pointer-events-none focus:outline-none">
+          Back
+        </button>
+        <button id="onboard-next-btn" onclick="onboardStepNext()" class="px-7 py-3 rounded-xl bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white font-bold text-xs shadow-md shadow-[#14B8A6]/10 transition-colors cursor-pointer uppercase tracking-wider focus:outline-none">
+          Next Step
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- VIEW 2: APP SHELL                                          -->
+  <!-- ========================================================== -->
+  <div id="view-app" class="hidden min-h-screen bg-[#F8F9FA] flex flex-col md:flex-row">
+    
+    <!-- LEFT SIDEBAR (Hidden on mobile) -->
+    <aside class="hidden md:flex flex-col w-64 bg-white text-slate-800 h-screen fixed top-0 left-0 border-r border-slate-200 z-30 justify-between">
+      <div>
+        <!-- Sidebar Header / Brand logo -->
+        <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-[#14B8A6] flex items-center justify-center text-white shadow font-bold">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </div>
+            <span class="font-semibold text-xl tracking-tight text-[#1A1A2E]">WanderWise</span>
+          </div>
+        </div>
+
+        <!-- Navigation tabs list -->
+        <nav class="p-4 space-y-1">
+          <button id="sidebar-tab-dashboard" onclick="switchTab('dashboard')" class="sidebar-link w-full flex items-center gap-3 px-3 py-3 rounded-md text-slate-500 hover:text-[#14B8A6] transition-all font-medium text-sm group cursor-pointer text-left">
+            <svg class="w-5 h-5 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+            </svg>
+            Dashboard
+          </button>
+
+          <button id="sidebar-tab-trips" onclick="switchTab('trips')" class="sidebar-link w-full flex items-center gap-3 px-3 py-3 rounded-md text-slate-500 hover:text-[#14B8A6] transition-all font-medium text-sm group cursor-pointer text-left">
+            <svg class="w-5 h-5 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Trips
+          </button>
+
+          <button id="sidebar-tab-explore" onclick="switchTab('explore')" class="sidebar-link w-full flex items-center gap-3 px-3 py-3 rounded-md text-slate-500 hover:text-[#14B8A6] transition-all font-medium text-sm group cursor-pointer text-left">
+            <svg class="w-5 h-5 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5A2.5 2.5 0 0019 9.5V8a.5.5 0 011 0M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+            </svg>
+            Explore
+          </button>
+
+          <button id="sidebar-tab-concierge" onclick="switchTab('concierge')" class="sidebar-link w-full flex items-center gap-3 px-3 py-3 rounded-md text-slate-500 hover:text-[#14B8A6] transition-all font-medium text-sm group cursor-pointer text-left">
+            <svg class="w-5 h-5 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+            </svg>
+            AI Concierge
+          </button>
+
+          <button id="sidebar-tab-profile" onclick="switchTab('profile')" class="sidebar-link w-full flex items-center gap-3 px-3 py-3 rounded-md text-slate-500 hover:text-[#14B8A6] transition-all font-medium text-sm group cursor-pointer text-left">
+            <svg class="w-5 h-5 opacity-70 group-hover:opacity-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Profile
+          </button>
+        </nav>
+      </div>
+
+      <div>
+        <!-- TRAVEL PERSONA SNAPSHOT from Design HTML -->
+        <div class="p-4 mb-4 mx-4 bg-[#1A1A2E] rounded-xl text-white shadow-md">
+          <p class="text-[10px] opacity-70 mb-2 font-bold tracking-widest uppercase">TRAVEL PERSONA</p>
+          <div class="flex items-center gap-2">
+            <div class="bg-[#FF8E72] w-2 h-2 rounded-full animate-pulse"></div>
+            <p class="font-semibold text-xs" id="sidebar-travel-persona-text">Slow Culture Nomad</p>
+          </div>
+          <button onclick="switchTab('profile')" class="mt-3 w-full py-2 bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-[#1A1A2E] rounded-lg text-xs font-bold transition-all">Upgrade Pro</button>
+        </div>
+
+        <!-- Sidebar footer / user info card -->
+        <div class="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50">
+          <div class="flex items-center gap-2">
+            <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-sm text-[#1A1A2E]" id="sidebar-avatar-initials">JD</div>
+            <div class="truncate max-w-[120px]">
+              <h6 class="font-bold text-xs text-slate-800" id="sidebar-user-name">Jane Doe</h6>
+              <span class="text-[10px] text-slate-400">Explorer Tier</span>
+            </div>
+          </div>
+          <button onclick="logout()" class="text-slate-400 hover:text-red-500 p-1 rounded-lg transition-colors cursor-pointer" title="Log Out">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MOBILE BOTTOM TAB BAR -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-200 flex justify-around items-center px-2 z-40 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+      <button onclick="switchTab('dashboard')" id="mobile-tab-dashboard" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-[#14B8A6] focus:outline-none">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z" />
+        </svg>
+        <span class="text-[10px] uppercase tracking-wider mt-0.5">Dash</span>
+      </button>
+
+      <button onclick="switchTab('trips')" id="mobile-tab-trips" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-[#14B8A6] focus:outline-none">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10" />
+        </svg>
+        <span class="text-[10px] uppercase tracking-wider mt-0.5">Trips</span>
+      </button>
+
+      <button onclick="switchTab('explore')" id="mobile-tab-explore" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-[#14B8A6] focus:outline-none">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1" />
+        </svg>
+        <span class="text-[10px] uppercase tracking-wider mt-0.5">Explore</span>
+      </button>
+
+      <button onclick="switchTab('concierge')" id="mobile-tab-concierge" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-[#14B8A6] focus:outline-none">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01" />
+        </svg>
+        <span class="text-[10px] uppercase tracking-wider mt-0.5">Globi</span>
+      </button>
+
+      <button onclick="switchTab('profile')" id="mobile-tab-profile" class="flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-[#14B8A6] focus:outline-none">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0" />
+        </svg>
+        <span class="text-[10px] uppercase tracking-wider mt-0.5">User</span>
+      </button>
+    </nav>
+
+    <!-- MAIN APP CONTENT PANELS (Has padding-left on desktop to respect fixed sidebar) -->
+    <main class="flex-1 md:pl-64 pb-20 md:pb-8 min-h-screen flex flex-col">
+      
+      <!-- Top header layout matching Professional Polish style -->
+      <header class="h-20 border-b border-slate-200 bg-white px-8 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div class="flex items-center gap-3">
+          <span class="text-[9px] font-extrabold px-2 py-1 rounded bg-[#1A1A2E] text-white tracking-widest uppercase shrink-0">SANDBOX</span>
+          <h1 class="text-xl font-bold text-[#1A1A2E] tracking-tight truncate" id="app-header-title">Dashboard Overview</h1>
+          <div id="offline-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#14B8A6]/10 text-[#14B8A6] text-[10px] font-bold uppercase tracking-wider shrink-0">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#14B8A6] animate-ping"></span> Live Cloud Sync
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 shrink-0">
+          <div class="text-xs text-slate-400 font-mono tracking-wider hidden sm:block" id="app-clock">
+            UTC: 2026-05-23 12:04:41
+          </div>
+          <button onclick="switchTab('trips')" class="bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg shadow-[#14B8A6]/20 transition-all cursor-pointer">
+            + Explore Trips
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Views Stack -->
+      <div class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-8">
+        
+        <!-- ==================== TAB 1: DASHBOARD ==================== -->
+        <section id="pane-dashboard" class="space-y-6 block">
+          <div class="border-b border-slate-200 pb-4">
+            <h2 class="font-display font-extrabold text-2xl text-slate-900" id="dash-greeting">Adventure Overview</h2>
+            <p class="text-slate-500 text-sm">Welcome back, jane doe! Here is your upcoming travel itinerary snapshot.</p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Col Left (Total 8 spans) -->
+            <div class="lg:col-span-8 space-y-6">
+              <!-- Upcoming Trip Card -->
+              <div class="p-6 rounded-xl bg-[#1A1A2E] text-white border border-white/5 shadow-md relative overflow-hidden group">
+                <div class="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-[#FF8E72]/15 pointer-events-none"></div>
+                <div class="relative z-10 space-y-4">
+                  <div class="flex justify-between items-start">
+                    <span class="px-2 py-0.5 rounded bg-[#14B8A6] text-slate-900 font-mono text-[10px] font-extrabold uppercase">Next Expedition</span>
+                    <span class="text-xs text-slate-300">Days to takeoff: <strong class="text-[#FF8E72] animate-pulse">18</strong></span>
+                  </div>
+                  <div>
+                    <h3 class="font-display font-extrabold text-xl sm:text-2xl text-white">Kyoto Cultural Journey</h3>
+                    <p class="text-slate-300 text-xs">Dates: June 10, 2026 - June 17, 2026</p>
+                  </div>
+                  <!-- Progress simulation -->
+                  <div class="space-y-1">
+                    <div class="flex justify-between text-[10px] text-slate-400">
+                      <span>Itinerary Compiled</span>
+                      <span>85% Completed</span>
+                    </div>
+                    <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                      <div class="h-full bg-gradient-to-r from-[#14B8A6] to-[#FF8E72] w-[85%]"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Budget Snapshot -->
+              <div class="p-6 rounded-xl bg-white border border-slate-100 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 gap-2">
+                  <h4 class="font-display font-bold text-slate-800 text-base">Budget Snapshot</h4>
+                  <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">Cap: $1,000</span>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4">
+                  <div class="p-3.5 rounded-xl bg-slate-50 text-center">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block">Total Spent</span>
+                    <span class="font-display font-extrabold text-xl text-slate-800 flex items-center justify-center" id="budget-spent">$363</span>
+                  </div>
+                  <div class="p-3.5 rounded-xl bg-slate-50 text-center">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block">Remaining</span>
+                    <span class="font-display font-extrabold text-xl text-[#14B8A6] flex items-center justify-center block" id="budget-remaining">$637</span>
+                  </div>
+                  <div class="p-3.5 rounded-xl bg-slate-50 text-center">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold block">Alert Level</span>
+                    <span class="font-display font-extrabold text-xl text-[#FF8E72] block">Safe</span>
+                  </div>
+                </div>
+
+                <!-- Expense dynamic logging form -->
+                <div class="pt-4 border-t border-slate-100">
+                  <h5 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">🛠️ Simulate expense adder</h5>
+                  <form id="expense-form" onsubmit="addExpense(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                    <div class="sm:col-span-5 space-y-1">
+                      <label class="text-[10px] text-slate-400 font-bold uppercase">Expense Label</label>
+                      <input type="text" id="exp-title" placeholder="e.g. Sushi lunch plate" required class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#14B8A6]" />
+                    </div>
+                    <div class="sm:col-span-3 space-y-1">
+                      <label class="text-[10px] text-slate-400 font-bold uppercase">Amount ($)</label>
+                      <input type="number" id="exp-amount" min="1" max="1000" placeholder="0.0" required class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#14B8A6]" />
+                    </div>
+                    <div class="sm:col-span-2 space-y-1">
+                      <label class="text-[10px] text-slate-400 font-bold uppercase">Category</label>
+                      <select id="exp-cat" class="w-full text-[11px] px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#14B8A6]">
+                        <option value="Food">Food</option>
+                        <option value="Lodging">Lodging</option>
+                        <option value="Activities">Activities</option>
+                        <option value="Transport">Transport</option>
+                      </select>
+                    </div>
+                    <div class="sm:col-span-2">
+                      <button type="submit" class="w-full py-2 bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white font-semibold rounded-lg text-xs cursor-pointer transition-colors shadow">
+                        Add Outlay
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <!-- Col Right (Total 4 spans) -->
+            <div class="lg:col-span-4 space-y-6">
+              <!-- Travel Persona card tracker -->
+              <div class="p-6 rounded-xl bg-white border border-slate-100 shadow-sm space-y-4">
+                <h4 class="font-display font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Travel Persona</h4>
+                <div class="text-center py-2 space-y-3">
+                  <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#1A1A2E] to-[#FF8E72] mx-auto flex items-center justify-center text-white text-2xl font-bold shadow-md" id="persona-badge">
+                    🎴
+                  </div>
+                  <div>
+                    <h5 class="font-bold text-slate-800 text-sm" id="lbl-persona">Slow Culture Nomad</h5>
+                    <span class="text-[10px] text-[#14B8A6] bg-[#14B8A6]/10 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Active Choice</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400" id="lbl-persona-desc">Optimizing layout for temple visits, local sushi counters, and museum queues.</p>
+                </div>
+                
+                <div class="pt-2 border-t border-slate-100 space-y-1.5 bg-slate-50 p-3 rounded-lg">
+                  <label class="text-[9px] text-[#FF8E72] font-semibold uppercase tracking-wider block">Modify Travel Persona Vibe:</label>
+                  <select onchange="updatePersona(this.value)" class="w-full text-xs px-2 py-1.5 bg-white border border-slate-200 rounded-md focus:outline-none focus:border-[#14B8A6]">
+                    <option value="culture">⛩️ Slow Culture Nomad</option>
+                    <option value="backpack">🎒 Carefree Backpacker</option>
+                    <option value="luxury">✈️ Slow Luxury Wanderer</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Visited Places Map placeholder -->
+              <div class="p-6 rounded-xl bg-white border border-slate-100 shadow-sm space-y-3">
+                <h4 class="font-display font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Visited Places Map</h4>
+                <!-- Small checkbox tracker -->
+                <div class="space-y-2 text-xs text-slate-500">
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked class="rounded border-slate-300 text-[#14B8A6] focus:ring-[#14B8A6]" />
+                    <span>Japan (Honshu Island) - Kyoto</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked class="rounded border-slate-300 text-[#14B8A6] focus:ring-[#14B8A6]" />
+                    <span>Italy (Amalfi Coast)</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="rounded border-slate-300 text-[#14B8A6] focus:ring-[#14B8A6]" />
+                    <span>Switzerland (Valais Glacier)</span>
+                  </label>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="rounded border-slate-300 text-[#14B8A6] focus:ring-[#14B8A6]" />
+                    <span>Iceland (Golden Circle)</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Quick Actions panel box -->
+              <div class="p-6 rounded-xl bg-white border border-slate-100 shadow-sm space-y-3">
+                <h4 class="font-display font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Quick Actions</h4>
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="switchTab('concierge')" class="p-2 bg-[#14B8A6]/10 text-[#14B8A6] hover:bg-[#14B8A6]/20 font-bold text-[11px] rounded-lg text-center transition-colors cursor-pointer">💬 Ask Globi</button>
+                  <button onclick="toggleOfflineSim()" class="p-2 bg-orange-100 text-[#FF8E72] hover:bg-[#FF8E72]/20 font-bold text-[11px] rounded-lg text-center transition-colors cursor-pointer" id="btn-offline-mode">📶 Toggle Cache</button>
+                  <button onclick="alert('Export Successful! Check your local WanderWise download folder.')" class="p-2 bg-slate-900/5 text-slate-800 hover:bg-slate-900/10 font-bold text-[11px] rounded-lg text-center transition-colors cursor-pointer">📤 Share Itinerary</button>
+                  <button onclick="resetBudgetDemo()" class="p-2 bg-red-50 text-red-500 hover:bg-red-100 font-bold text-[11px] rounded-lg text-center transition-colors cursor-pointer">🔄 Reset Demo</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 2: TRIPS ==================== -->
+        <section id="pane-trips" class="space-y-6 hidden">
+          <div class="border-b border-slate-200 pb-4">
+            <h2 class="font-display font-extrabold text-2xl text-slate-900">My Expeditions</h2>
+            <p class="text-slate-500 text-sm">Review active travel planning boards and AI suggestions.</p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 space-y-6">
+              <!-- AI Suggested Trip -->
+              <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-sm space-y-4">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <span class="text-[10px] text-[#14B8A6] font-bold uppercase tracking-wider block">Custom Suggestion</span>
+                    <h4 class="font-display font-bold text-slate-900 text-lg">Amalfi Coast Sunset Route</h4>
+                  </div>
+                  <span class="px-2 py-0.5 text-[9px] font-bold uppercase rounded bg-green-100 text-green-700">Recommended Vibe</span>
+                </div>
+                <!-- Custom styling for placeholder suggestion -->
+                <div class="p-4 bg-slate-50 rounded-xl space-y-3 text-xs text-slate-600 border border-dashed border-slate-200">
+                  <div class="flex items-center gap-2 font-semibold text-slate-700">🇮🇹 Naples — Positano — Ravello Luxury Trip</div>
+                  <p class="text-slate-500 text-xs leading-relaxed">
+                    Based on your "Slow Culture" preference, this timeline groups cliffside hotel bookings, private ferry transfers, and hidden lemon garden dinner queues elegantly.
+                  </p>
+                  <div class="flex gap-4 font-mono text-[10px] text-slate-400">
+                    <span>⏱ Itinerary load: 12 seconds</span>
+                    <span>📈 Lodging optimization index: 94%</span>
+                  </div>
+                </div>
+                <button onclick="alert('Importing Amalfi Coast Sunset Route itinerary active...')" class="py-2.5 px-4 rounded-lg bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white font-semibold text-xs transition-colors cursor-pointer">Import Active Planner</button>
+              </div>
+
+              <!-- Destination Library placeholder boxes -->
+              <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-sm space-y-4">
+                <h4 class="font-display font-bold text-slate-900 text-base border-b border-slate-100 pb-2">My Favorite Bookmarks</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <!-- Book 1 -->
+                  <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 text-left space-y-2 relative">
+                    <button class="absolute top-2 right-2 text-red-400" onclick="this.innerText = this.innerText==='♥'?'♡':'♥'">♥</button>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 bg-sky-100 text-sky-700 rounded uppercase">Iceland</span>
+                    <h5 class="text-xs font-bold text-slate-800">Reykjavík Golden Circle</h5>
+                    <p class="text-[11px] text-slate-400">Fjords, hot springs, active geysers</p>
+                  </div>
+                  <!-- Book 2 -->
+                  <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 text-left space-y-2 relative">
+                    <button class="absolute top-2 right-2 text-red-400" onclick="this.innerText = this.innerText==='♥'?'♡':'♥'">♥</button>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded uppercase">Greece</span>
+                    <h5 class="text-xs font-bold text-slate-800">Santorini Sunsets</h5>
+                    <p class="text-[11px] text-slate-400">White cliffs, coastal food highlights</p>
+                  </div>
+                  <!-- Book 3 -->
+                  <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 text-left space-y-2 relative">
+                    <button class="absolute top-2 right-2 text-red-500" onclick="this.innerText = this.innerText==='♥'?'♡':'♥'">♡</button>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded uppercase">Peru</span>
+                    <h5 class="text-xs font-bold text-slate-800">Machu Picchu Trek</h5>
+                    <p class="text-[11px] text-slate-400">Cloud mountain fortress, active hiking</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Col 4 Trips Historical -->
+            <div class="lg:col-span-4 bg-white rounded-xl border border-slate-100 p-6 shadow-sm space-y-4">
+              <h4 class="font-display font-bold text-slate-900 text-sm border-b border-slate-100 pb-2">Trip History</h4>
+              
+              <!-- Tile 1 -->
+              <div class="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
+                <div>
+                  <h5 class="text-xs font-bold text-slate-800">Paris & Versailles Pass</h5>
+                  <span class="text-[10px] font-semibold text-slate-400">Completed June 2025</span>
+                </div>
+                <div class="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded">Active</div>
+              </div>
+              
+              <!-- Tile 2 -->
+              <div class="p-3 bg-slate-50 rounded-lg flex items-center justify-between">
+                <div>
+                  <h5 class="text-xs font-bold text-slate-800">Zurich Ski Escape</h5>
+                  <span class="text-[10px] font-semibold text-slate-400">Completed Jan 2024</span>
+                </div>
+                <div class="text-[10px] font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded">Archived</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 3: EXPLORE ==================== -->
+        <section id="pane-explore" class="space-y-6 hidden">
+          <div class="border-b border-slate-200 pb-4">
+            <h2 class="font-display font-extrabold text-2xl text-slate-900">Itineraries & Discovery</h2>
+            <p class="text-slate-500 text-sm">Coordinate daily schedule slots and check interactive budget rings.</p>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left 8 Itineraries & search -->
+            <div class="lg:col-span-8 space-y-6">
+              
+              <!-- Today's Itinerary Slots -->
+              <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-sm space-y-4">
+                <h4 class="font-display font-bold text-slate-900 text-sm pb-2 border-b border-slate-100">Kyoto Autumn Daily slots</h4>
+                
+                <div class="space-y-3 font-medium">
+                  <!-- Slot 1 -->
+                  <div class="flex gap-4 items-start p-3 bg-slate-50 rounded-lg border-l-4 border-[#14B8A6]">
+                    <span class="text-[11px] text-slate-400 font-mono tracking-tighter mt-0.5">09:00 AM</span>
+                    <div>
+                      <h5 class="text-xs font-bold text-slate-800">Kinkaku-ji Zen Pavilion Garden Entrance</h5>
+                      <p class="text-[10px] text-[#FF8E72]">Advised by Globi: Recommended early visit parameters prevent photo-bombers.</p>
+                    </div>
+                  </div>
+
+                  <!-- Slot 2 -->
+                  <div class="flex gap-4 items-start p-3 bg-slate-50 rounded-lg border-l-4 border-slate-400">
+                    <span class="text-[11px] text-slate-400 font-mono tracking-tighter mt-0.5">12:30 PM</span>
+                    <div>
+                      <h5 class="text-xs font-bold text-slate-800">Traditional Kaiseki Vegetarian Bento At Niwa</h5>
+                      <p class="text-[10px] text-slate-400">Located with active menu maps. Total average cost: $28.</p>
+                    </div>
+                  </div>
+
+                  <!-- Slot 3 -->
+                  <div class="flex gap-4 items-start p-3 bg-slate-50 rounded-lg border-l-4 border-[#FF8E72]">
+                    <span class="text-[11px] text-slate-400 font-mono tracking-tighter mt-0.5">03:00 PM</span>
+                    <div>
+                      <h5 class="text-xs font-bold text-slate-800">Fushimi Inari Torii Gate Forest Walk</h5>
+                      <p class="text-[10px] text-[#FF8E72]">Advised: Hydrate active! Take path 4 to skip tourist bottlenecks.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Places & Events Search -->
+              <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-sm space-y-4">
+                <h4 class="font-display font-bold text-slate-900 text-sm pb-2 border-b border-slate-100">Interactive Sights Searcher</h4>
+                <div class="space-y-4">
+                  <div>
+                    <input type="text" id="sight-search-input" onkeyup="filterSights()" placeholder="Search sights (e.g. temple, market, bamboo)..." class="w-full text-xs px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#14B8A6]" />
+                  </div>
+                  <!-- Sights search database list results (filtered dynamically) -->
+                  <div id="explore-search-results" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Loaded via javascript filter dynamic -->
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right 4 columns: Budget Ring & Quick Facts -->
+            <div class="lg:col-span-4 space-y-6">
+              
+              <!-- SVG Budget Ring Card -->
+              <div class="p-6 rounded-xl bg-white border border-slate-100 shadow-sm space-y-4 text-center">
+                <h4 class="font-display font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Category Weighting Circular</h4>
+                
+                <div class="relative w-32 h-32 mx-auto flex items-center justify-center">
+                  <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <!-- Base ring background circle -->
+                    <circle class="text-slate-100" stroke-width="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+                    <!-- Dynamic circular stroke -->
+                    <circle id="budget-circ-prog" class="text-[#14B8A6] transition-all duration-700 ease-out" stroke-width="8" stroke-dasharray="251.2" stroke-dashoffset="150" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span id="budget-circ-percentage" class="text-lg font-extrabold font-display text-slate-800">45%</span>
+                    <span class="text-[8px] uppercase tracking-wider text-slate-400 font-bold">Of Cap Used</span>
+                  </div>
+                </div>
+
+                <div class="text-[10px] text-slate-500 pt-2 space-y-1">
+                  <div class="flex justify-between"><span>🍕 Food Allocation:</span><strong id="percent-food" class="text-slate-700">8%</strong></div>
+                  <div class="flex justify-between"><span>🏨 Lodging Allocation:</span><strong id="percent-lodging" class="text-slate-700">50%</strong></div>
+                  <div class="flex justify-between"><span>⛩️ Activities Allocation:</span><strong id="percent-[#FF8E72]" class="text-[#FF8E72]">12%</strong></div>
+                  <div class="flex justify-between"><span>🚆 Transport Allocation:</span><strong id="percent-transport" class="text-slate-700">30%</strong></div>
+                </div>
+              </div>
+
+              <!-- Quick Facts Panel -->
+              <div class="p-6 rounded-xl bg-white border border-slate-100 shadow-sm space-y-3">
+                <h4 class="font-display font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">Kyoto Quick Facts</h4>
+                <ul class="text-[11px] text-slate-500 space-y-2 leading-relaxed">
+                  <li>💡 <strong>Grid Volt:</strong> 100V Type A/B Power Standard</li>
+                  <li>💵 <strong>Cash Vibe:</strong> Small counters require physical yen coins, keep physical wallet secure.</li>
+                  <li>🗣 <strong>Politeness Cue:</strong> Arigatou gozaimasu (Thank you very much) or Konnichiwa (Hello).</li>
+                  <li>🚨 <strong>Emergency Contact:</strong> Dial 119 for tourist assistance, English interpreters on board.</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 4: CONCIERGE ==================== -->
+        <section id="pane-concierge" class="space-y-6 hidden">
+          <div class="border-b border-slate-200 pb-4">
+            <h2 class="font-display font-extrabold text-2xl text-slate-900">AI Concierge Globi</h2>
+            <p class="text-slate-500 text-sm">Ask questions, read safety rules guidelines, and communicate with Globi.</p>
+          </div>
+
+          <div class="max-w-4xl mx-auto bg-white rounded-xl border border-slate-100 shadow-sm h-[500px] flex flex-col overflow-hidden">
+            <!-- Header chat status bar -->
+            <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-[#14B8A6] to-[#FF8E72] flex items-center justify-center font-bold text-xl text-neutral-900 animate-pulse">🐘</div>
+                <div>
+                  <h4 class="font-bold text-xs">Globi Travel Concierge</h4>
+                  <span class="text-[8px] uppercase tracking-wider text-[#14B8A6] font-bold">Active Assistant Simulator</span>
+                </div>
+              </div>
+              <span class="text-[10px] text-slate-400 italic">Preloaded Local Wisdom</span>
+            </div>
+
+            <!-- Interactive messages container -->
+            <div id="chat-scroller" class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50 text-xs">
+              <!-- Welcome -->
+              <div class="flex gap-3 max-w-[80%]">
+                <div class="w-7 h-7 rounded-full bg-[#14B8A6] flex-shrink-0 flex items-center justify-center text-xs">🐘</div>
+                <div class="p-3 bg-white rounded-r-xl rounded-bl-xl border border-slate-100 shadow-sm leading-relaxed text-slate-700">
+                  Hello adventurer! I'm Globi, your localized AI assistant. I have mapped all weather indicators, currency tables, and packing grids for Kyoto. Ask me anything or choose a smart suggestion bubble below!
+                </div>
+              </div>
+
+              <div id="chat-messages-append">
+                <!-- Dynamically added dialogues go here -->
+              </div>
+
+              <!-- Typing Indicator Placeholder -->
+              <div id="chat-typing-bubble" class="hidden flex gap-3 max-w-[80%]">
+                <div class="w-7 h-7 rounded-full bg-[#14B8A6] flex items-center justify-center text-xs">🐘</div>
+                <div class="p-3 bg-slate-100 rounded-r-xl rounded-bl-xl text-slate-400 italic font-mono uppercase tracking-widest text-[9px] animate-pulse">
+                  Globi is structuring advice...
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Suggestions container -->
+            <div class="p-3 border-t border-slate-100 bg-white flex flex-wrap gap-2">
+              <button onclick="triggerQuickResponse('weather')" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 hover:border-[#14B8A6] rounded-full text-[10px] font-medium text-slate-600 cursor-pointer">🌤 Kyoto Weather Autumn</button>
+              <button onclick="triggerQuickResponse('sushi')" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 hover:border-[#14B8A6] rounded-full text-[10px] font-medium text-slate-600 cursor-pointer">🍣 Top Tokyo Street Food</button>
+              <button onclick="triggerQuickResponse('packing')" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 hover:border-[#14B8A6] rounded-full text-[10px] font-medium text-slate-600 cursor-pointer">🎒 Universal Packing Check</button>
+              <button onclick="triggerQuickResponse('emergency')" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 hover:border-[#14B8A6] rounded-full text-[10px] font-medium text-slate-600 cursor-pointer">🚨 Emergency Protocols</button>
+            </div>
+
+            <!-- Text Input send box -->
+            <form onsubmit="submitCustomChat(event)" class="p-3 border-t border-slate-100 bg-white flex gap-2">
+              <input type="text" id="chat-input" placeholder="Type a custom query to Globi travel buddy..." class="flex-1 text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-[#14B8A6]" />
+              <button type="submit" class="p-2.5 bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white rounded-lg flex items-center justify-center cursor-pointer">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- ==================== TAB 5: PROFILE ==================== -->
+        <section id="pane-profile" class="space-y-6 hidden">
+          <div class="border-b border-slate-200 pb-4">
+            <h2 class="font-display font-extrabold text-2xl text-slate-900">Travel Profile</h2>
+            <p class="text-slate-500 text-sm">Update travel tags, check voyager parameters, and adjust credentials.</p>
+          </div>
+
+          <div class="max-w-2xl mx-auto space-y-6">
+            <!-- User Profile card -->
+            <div class="bg-white rounded-xl border border-slate-100 p-8 shadow-sm text-center space-y-4">
+              <div class="relative w-24 h-24 mx-auto">
+                <div class="w-full h-full rounded-full bg-gradient-to-tr from-[#14B8A6] via-[#1A1A2E] to-[#FF8E72] flex items-center justify-center font-bold text-white text-3xl shadow-md border-4 border-white" id="profile-avatar-node">
+                  JD
+                </div>
+                <!-- Mini status dot -->
+                <span class="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white"></span>
+              </div>
+
+              <div class="space-y-1">
+                <div class="flex items-center justify-center gap-2">
+                  <input type="text" id="user-display-name-input" value="Jane Doe" onkeyup="updateGlobalUserName(this.value)" class="text-xl font-display font-extrabold text-slate-800 text-center border-b border-transparent hover:border-slate-300 focus:border-[#14B8A6] focus:outline-none px-2 py-0.5 rounded-sm max-w-[180px]" />
+                  <span class="text-xs text-slate-400">✏️</span>
+                </div>
+                <p class="text-xs text-slate-400">Active membership: Explorer Standard</p>
+                <span class="inline-flex py-0.5 px-3 rounded-full bg-orange-100 text-[#FF8E72] font-semibold text-[10px] uppercase tracking-wider" id="profile-persona-label">Slow Culture Explorer</span>
+              </div>
+
+              <!-- Stat Counters Grid -->
+              <div class="grid grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-center">
+                <div class="p-3 bg-slate-50 rounded-lg">
+                  <strong class="font-display font-extrabold text-lg text-slate-800">14</strong>
+                  <span class="text-[9px] text-slate-400 uppercase tracking-widest block">Countries</span>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-lg">
+                  <strong class="font-display font-extrabold text-lg text-slate-800">32</strong>
+                  <span class="text-[9px] text-slate-400 uppercase tracking-widest block">Trips Created</span>
+                </div>
+                <div class="p-3 bg-slate-50 rounded-lg">
+                  <strong class="font-display font-extrabold text-lg text-[#14B8A6]">48.2k</strong>
+                  <span class="text-[9px] text-slate-400 uppercase tracking-widest block">Miles Tracked</span>
+                </div>
+              </div>
+
+              <!-- Main action list -->
+              <div class="pt-6 flex flex-col sm:flex-row justify-center gap-4">
+                <button onclick="alert('Profile Saved Successfully')" class="px-5 py-2.5 bg-[#14B8A6] hover:bg-[#14B8A6]/90 text-white font-semibold text-xs rounded-xl cursor-pointer">
+                  Update Preferences
+                </button>
+                <button onclick="logout()" class="px-5 py-2.5 border border-red-200 text-red-500 hover:bg-red-50 font-semibold text-xs rounded-xl cursor-pointer">
+                  Log Out From App
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- VANILLA JAVASCRIPT LOGIC DIRECTORY                         -->
+  <!-- ========================================================== -->
+  <script>
+    // Global State management objects
+    let state = {
+      user: 'Jane Doe',
+      persona: ' lento',
+      offlineActive: false,
+      budget: {
+        totalCap: 1000,
+        expenses: [
+          { id: 1, title: 'Kyoto Palace Entry Tickets', amount: 45, category: 'Activities' },
+          { id: 2, title: 'Traditional Ramen Menu', amount: 28, category: 'Food' },
+          { id: 3, title: 'Boutique Ryokan Resort', amount: 180, category: 'Lodging' },
+          { id: 4, title: 'Osaka Bullet Train Sub', amount: 110, category: 'Transport' }
+        ]
+      },
+      currentTab: 'dashboard',
+      currency: 'INR'
+    };
+
+    // Onboarding interactive wizard state
+    let onboardState = {
+      currentStep: 1,
+      fullname: '',
+      dob: '',
+      homecity: '',
+      currency: 'INR',
+      travelStyle: '',
+      tripDuration: '',
+      budgetTier: '',
+      accommodation: [],
+      companions: '',
+      foodPrefs: [],
+      interests: [],
+      languages: [],
+      mobility: 'Moderate'
+    };
+
+    const currencySymbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+
+    // Update main workspace with active profile fields
+    function applyProfileToAppState(profile) {
+      if (!profile) return;
+      
+      // Update state object
+      state.user = profile.fullname;
+      state.currency = profile.currency;
+      state.budget.totalCap = profile.budgetCap;
+      
+      const symbol = currencySymbols[profile.currency] || '$';
+      
+      // Adapt mock expenses proportionally to the target capacity limits
+      state.budget.expenses = [
+        { id: 1, title: 'Central Palace Entry Tickets', amount: Math.round(profile.budgetCap * 0.045), category: 'Activities' },
+        { id: 2, title: 'Traditional Gourmet Tasting', amount: Math.round(profile.budgetCap * 0.028), category: 'Food' },
+        { id: 3, title: 'Boutique Lodge Accommodation', amount: Math.round(profile.budgetCap * 0.180), category: 'Lodging' },
+        { id: 4, title: 'Local Trans Bullet Sub', amount: Math.round(profile.budgetCap * 0.110), category: 'Transport' }
+      ];
+      
+      recalculateExpenses();
+      
+      // Update currency indicators inside App Shell dynamically
+      document.querySelectorAll('.currency-sym').forEach(el => {
+        el.innerText = symbol;
+      });
+      
+      // Refresh name strings and letters
+      updateGlobalUserName(profile.fullname);
+      updatePersona(profile.persona);
+      
+      // Profile screen binder
+      const pName = document.getElementById('profile-fullname-text');
+      const pEmail = document.getElementById('profile-email-text');
+      const pHome = document.getElementById('profile-homecity-text');
+      const pStyle = document.getElementById('profile-travelstyle-text');
+      const pBudget = document.getElementById('profile-budgetcap-text');
+      const pInterests = document.getElementById('profile-interests-text');
+      
+      if (pName) pName.innerText = profile.fullname;
+      if (pEmail) pEmail.innerText = profile.email || 'guest@wanderwise.local';
+      if (pHome) pHome.innerText = profile.homecity;
+      if (pStyle) pStyle.innerText = profile.travelStyle;
+      if (pBudget) pBudget.innerText = `${symbol}${profile.budgetCap.toLocaleString()}`;
+      if (pInterests) pInterests.innerText = profile.interests.join(', ') || 'General Sights';
+    }
+
+    // Auth screen subtabs switching logic
+    function switchAuthTab(type) {
+      const signinBtn = document.getElementById('auth-tab-signin');
+      const signupBtn = document.getElementById('auth-tab-signup');
+      const signinForm = document.getElementById('form-signin');
+      const signupForm = document.getElementById('form-signup');
+      
+      if (type === 'signin') {
+        if (signinBtn) signinBtn.className = "flex-grow pb-3 text-center text-sm font-bold text-[#14B8A6] border-b-2 border-[#14B8A6] focus:outline-none transition-all cursor-pointer";
+        if (signupBtn) signupBtn.className = "flex-grow pb-3 text-center text-sm font-semibold text-slate-400 border-b-2 border-transparent hover:text-slate-600 focus:outline-none transition-all cursor-pointer";
+        if (signinForm) signinForm.classList.remove('hidden');
+        if (signupForm) signupForm.classList.add('hidden');
+      } else {
+        if (signupBtn) signupBtn.className = "flex-grow pb-3 text-center text-sm font-bold text-[#14B8A6] border-b-2 border-[#14B8A6] focus:outline-none transition-all cursor-pointer";
+        if (signinBtn) signinBtn.className = "flex-grow pb-3 text-center text-sm font-semibold text-slate-400 border-b-2 border-transparent hover:text-slate-600 focus:outline-none transition-all cursor-pointer";
+        if (signupForm) signupForm.classList.remove('hidden');
+        if (signinForm) signinForm.classList.add('hidden');
+      }
+    }
+
+    // Secure simulated client persistence logins
+    function handleSignInSubmit(event) {
+      event.preventDefault();
+      const emailInput = document.getElementById('signin-email');
+      const passInput = document.getElementById('signin-password');
+      if (!emailInput || !passInput) return;
+
+      const email = emailInput.value.trim().toLowerCase();
+      const password = passInput.value;
+      
+      if (!email || !password) {
+        showToast("Please input your login identifiers in order to enter.", true);
+        return;
+      }
+      
+      const usersRaw = localStorage.getItem('wanderUsers');
+      const users = usersRaw ? JSON.parse(usersRaw) : [];
+      
+      const matchedUser = users.find(u => u.email === email && u.password === password);
+      
+      if (matchedUser) {
+        showToast(`Welcome back, ${matchedUser.fullname}!`);
+        localStorage.setItem('currentUserEmail', email);
+        
+        const profilesRaw = localStorage.getItem('wanderProfiles') || '{}';
+        const profiles = JSON.parse(profilesRaw);
+        const profile = profiles[email];
+        
+        showLoader("Configuring user environments...", () => {
+          document.getElementById('view-login').classList.remove('flex');
+          document.getElementById('view-login').classList.add('hidden');
+          
+          if (profile) {
+            applyProfileToAppState(profile);
+            localStorage.setItem('userProfile', JSON.stringify(profile));
+            
+            document.getElementById('view-app').classList.remove('hidden');
+            document.getElementById('view-app').classList.add('flex');
+            switchTab('dashboard');
+          } else {
+            launchOnboarding(matchedUser.fullname);
+          }
+        });
+      } else {
+        showToast("Access refused: Password invalid or account untracked inside this sandbox profile. Try Sign Up instead!", true);
+      }
+    }
+
+    function handleSignUpSubmit(event) {
+      event.preventDefault();
+      const nameIn = document.getElementById('signup-fullname');
+      const mailIn = document.getElementById('signup-email');
+      const passIn = document.getElementById('signup-password');
+      const confIn = document.getElementById('signup-confirm');
+      
+      if (!nameIn || !mailIn || !passIn || !confIn) return;
+
+      const fullname = nameIn.value.trim();
+      const email = mailIn.value.trim().toLowerCase();
+      const password = passIn.value;
+      const confirm = confIn.value;
+      
+      if (!fullname || !email || !password || !confirm) {
+        showToast("All credentials blocks must be entered.", true);
+        return;
+      }
+      
+      if (password !== confirm) {
+        showToast("Verification fields do not match register fields.", true);
+        return;
+      }
+      
+      if (password.length < 6) {
+        showToast("Identity password is required to be at least 6 characters.", true);
+        return;
+      }
+      
+      const usersRaw = localStorage.getItem('wanderUsers');
+      const users = usersRaw ? JSON.parse(usersRaw) : [];
+      
+      if (users.some(u => u.email === email)) {
+        showToast("This email identifier is already registered.", true);
+        return;
+      }
+      
+      users.push({ fullname, email, password });
+      localStorage.setItem('wanderUsers', JSON.stringify(users));
+      localStorage.setItem('currentUserEmail', email);
+      
+      showToast("Account established! Opening traveler customization wizards...");
+      
+      showLoader("Connecting workspace pipelines...", () => {
+        document.getElementById('view-login').classList.remove('flex');
+        document.getElementById('view-login').classList.add('hidden');
+        launchOnboarding(fullname);
+      });
+    }
+
+    function continueAsGuest() {
+      showToast("Guest account sandbox session allocated.");
+      localStorage.setItem('currentUserEmail', 'guest@wanderwise.local');
+      
+      showLoader("Establishing transient cores...", () => {
+        document.getElementById('view-login').classList.remove('flex');
+        document.getElementById('view-login').classList.add('hidden');
+        launchOnboarding("Guest Voyager");
+      });
+    }
+
+    // Launch Wizard setups
+    function launchOnboarding(name) {
+      onboardState = {
+        currentStep: 1,
+        fullname: name || 'Explorer',
+        dob: '',
+        homecity: '',
+        currency: 'INR',
+        travelStyle: '',
+        tripDuration: '',
+        budgetTier: '',
+        accommodation: [],
+        companions: '',
+        foodPrefs: ['No Preference'],
+        interests: [],
+        languages: [],
+        mobility: 'Moderate'
+      };
+      
+      const nameNode = document.getElementById('onboard-name');
+      const cityNode = document.getElementById('onboard-homecity');
+      const dobNode = document.getElementById('onboard-dob');
+      
+      if (nameNode) nameNode.value = onboardState.fullname;
+      if (cityNode) cityNode.value = 'Mumbai';
+      if (dobNode) dobNode.value = '';
+      
+      onboardState.homecity = 'Mumbai';
+      
+      // Preset selections
+      setOnboardCurrency('INR');
+      setOnboardStyle('Cultural');
+      setOnboardDuration('1 week');
+      setOnboardBudget('Mid-range');
+      setOnboardCompanions('Solo');
+      setOnboardMobility('Moderate');
+      
+      showOnboardStep(1);
+      
+      const obView = document.getElementById('view-onboarding');
+      if (obView) {
+        obView.classList.remove('hidden');
+        obView.classList.add('flex');
+      }
+    }
+
+    // Step navigator
+    function showOnboardStep(step) {
+      onboardState.currentStep = step;
+      
+      for (let s = 1; s <= 4; s++) {
+        const stepNode = document.getElementById(`onboard-step-${s}`);
+        if (stepNode) stepNode.classList.add('hidden');
+      }
+      
+      const sumNode = document.getElementById('onboard-step-summary');
+      if (sumNode) sumNode.classList.add('hidden');
+      
+      if (step <= 4) {
+        const activeNode = document.getElementById(`onboard-step-${step}`);
+        if (activeNode) activeNode.classList.remove('hidden');
+        
+        const ind = document.getElementById('onboard-step-indicator');
+        const bar = document.getElementById('onboard-progress-bar');
+        const backBtn = document.getElementById('onboard-back-btn');
+        const nextBtn = document.getElementById('onboard-next-btn');
+        
+        if (ind) ind.innerText = `Step ${step} of 4`;
+        if (bar) bar.style.width = `${step * 25}%`;
+        if (backBtn) backBtn.disabled = (step === 1);
+        if (nextBtn) nextBtn.innerText = "Next Step";
+      } else {
+        if (sumNode) sumNode.classList.remove('hidden');
+        
+        const ind = document.getElementById('onboard-step-indicator');
+        const bar = document.getElementById('onboard-progress-bar');
+        const backBtn = document.getElementById('onboard-back-btn');
+        const nextBtn = document.getElementById('onboard-next-btn');
+        
+        if (ind) ind.innerText = `Final Custom Profile`;
+        if (bar) bar.style.width = `100%`;
+        if (backBtn) backBtn.disabled = false;
+        if (nextBtn) nextBtn.innerText = "Finish & Enter";
+        
+        renderOnboardSummary();
+      }
+    }
+
+    function renderOnboardSummary() {
+      const symbol = currencySymbols[onboardState.currency] || '$';
+      let cap = 100000;
+      const curr = onboardState.currency;
+      const tier = onboardState.budgetTier;
+      
+      const caps = {
+        'INR': { 'Budget': 30000, 'Mid-range': 100000, 'Luxury': 300000 },
+        'USD': { 'Budget': 500, 'Mid-range': 1500, 'Luxury': 5000 },
+        'EUR': { 'Budget': 450, 'Mid-range': 1350, 'Luxury': 4500 },
+        'GBP': { 'Budget': 400, 'Mid-range': 1200, 'Luxury': 4000 }
+      };
+      
+      if (caps[curr] && caps[curr][tier]) {
+        cap = caps[curr][tier];
+      }
+      
+      const sumName = document.getElementById('summary-fullname-val');
+      const sumHome = document.getElementById('summary-homecity-val');
+      const sumPers = document.getElementById('summary-persona-val');
+      const sumCurr = document.getElementById('summary-currency-val');
+      const sumLodg = document.getElementById('summary-lodging-val');
+      const sumDur = document.getElementById('summary-duration-val');
+      const sumDiet = document.getElementById('summary-diet-val');
+      const sumInt = document.getElementById('summary-interests-val');
+      const sumMob = document.getElementById('summary-mobility-val');
+      
+      if (sumName) sumName.innerText = onboardState.fullname;
+      if (sumHome) sumHome.innerText = onboardState.homecity;
+      if (sumPers) sumPers.innerText = `${onboardState.travelStyle || 'Cultural'} Explorer`;
+      if (sumCurr) sumCurr.innerText = `${onboardState.currency} (Capacity: ${symbol}${cap.toLocaleString()})`;
+      if (sumLodg) sumLodg.innerText = onboardState.accommodation.join(', ') || 'Hotel, Airbnb';
+      if (sumDur) sumDur.innerText = onboardState.tripDuration || '1 week';
+      if (sumDiet) sumDiet.innerText = onboardState.foodPrefs.join(', ') || 'No Preference';
+      if (sumInt) sumInt.innerText = onboardState.interests.join(', ') || 'General Landmarks';
+      if (sumMob) sumMob.innerText = `${onboardState.mobility} Range (${onboardState.languages.join(', ') || 'English Spoken'})`;
+    }
+
+    // Interactive button event bindings
+    function setOnboardCurrency(curr) {
+      onboardState.currency = curr;
+      const currencies = ['INR', 'USD', 'EUR', 'GBP'];
+      currencies.forEach(c => {
+        const btn = document.getElementById(`onboard-curr-${c}`);
+        if (btn) {
+          if (c === curr) {
+            btn.className = "onboard-currency-btn py-3 rounded-xl border-2 border-[#14B8A6] bg-[#14B8A6]/5 text-sm font-semibold text-[#14B8A6] transition-all font-mono shadow-sm cursor-pointer active:scale-95";
+          } else {
+            btn.className = "onboard-currency-btn py-3 rounded-xl border-2 border-slate-200 hover:border-[#14B8A6]/40 bg-white text-sm font-semibold text-slate-600 transition-all font-mono shadow-sm cursor-pointer active:scale-95";
+          }
+        }
+      });
+    }
+
+    function setOnboardStyle(style) {
+      onboardState.travelStyle = style;
+      const styles = ['Adventure', 'Relaxation', 'Cultural', 'Foodie', 'Backpacker', 'Luxury'];
+      styles.forEach(s => {
+        const card = document.getElementById(`style-card-${s}`);
+        if (card) {
+          if (s === style) {
+            card.classList.add('border-[#14B8A6]', 'bg-[#14B8A6]/5');
+            card.classList.remove('border-slate-150');
+          } else {
+            card.classList.remove('border-[#14B8A6]', 'bg-[#14B8A6]/5');
+            card.classList.add('border-slate-150');
+          }
+        }
+      });
+    }
+
+    function setOnboardDuration(dur) {
+      onboardState.tripDuration = dur;
+      const idMap = {
+        'Weekend': 'Weekend',
+        '1 week': '1week',
+        '2 weeks': '2weeks',
+        '1 month+': '1month'
+      };
+      
+      Object.keys(idMap).forEach(key => {
+        const btn = document.getElementById(`duration-btn-${idMap[key]}`);
+        if (btn) {
+          if (key === dur) {
+            btn.className = "onboard-duration-btn py-3 border border-[#14B8A6] bg-[#14B8A6]/5 text-[#14B8A6] rounded-xl text-xs font-semibold cursor-pointer transition-all";
+          } else {
+            btn.className = "onboard-duration-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none";
+          }
+        }
+      });
+    }
+
+    // Fast configuration helper
+    function setOnboardBudget(tier) {
+      onboardState.budgetTier = tier;
+      const tiers = ['Budget', 'Mid-range', 'Luxury'];
+      tiers.forEach(t => {
+        const card = document.getElementById(`budget-card-${t}`);
+        if (card) {
+          if (t === tier) {
+            card.classList.add('border-[#14B8A6]', 'bg-[#14B8A6]/5');
+            card.classList.remove('border-slate-150');
+          } else {
+            card.classList.remove('border-[#14B8A6]', 'bg-[#14B8A6]/5');
+            card.classList.add('border-slate-150');
+          }
+        }
+      });
+    }
+
+    function toggleOnboardAccom(accom) {
+      const index = onboardState.accommodation.indexOf(accom);
+      if (index === -1) {
+        onboardState.accommodation.push(accom);
+      } else {
+        onboardState.accommodation.splice(index, 1);
+      }
+      
+      const acList = ['Hostel', 'Hotel', 'Airbnb', 'Resort', 'Homestay'];
+      acList.forEach(ac => {
+        const chip = document.getElementById(`accom-chip-${ac}`);
+        if (chip) {
+          const selected = onboardState.accommodation.includes(ac);
+          if (selected) {
+            chip.className = "onboard-accom-chip px-4 py-2 bg-[#14B8A6] text-white border border-[#14B8A6] rounded-xl text-xs font-semibold transition-all cursor-pointer focus:outline-none";
+          } else {
+            chip.className = "onboard-accom-chip px-4 py-2 bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] hover:text-[#14B8A6] rounded-xl text-xs font-semibold transition-all cursor-pointer focus:outline-none";
+          }
+        }
+      });
+    }
+
+    function setOnboardCompanions(comp) {
+      onboardState.companions = comp;
+      const comps = ['Solo', 'Couple', 'Family', 'Friends'];
+      comps.forEach(c => {
+        const btn = document.getElementById(`companions-btn-${c}`);
+        if (btn) {
+          if (c === comp) {
+            btn.className = "onboard-companions-btn py-3 border border-[#14B8A6] bg-[#14B8A6]/5 text-[#14B8A6] rounded-xl text-xs font-semibold cursor-pointer transition-colors focus:outline-none";
+          } else {
+            btn.className = "onboard-companions-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer hover:border-[#14B8A6] transition-colors focus:outline-none";
+          }
+        }
+      });
+    }
+
+    function toggleOnboardFood(food) {
+      if (food === 'No Preference') {
+        onboardState.foodPrefs = ['No Preference'];
+      } else {
+        const noPrefIndex = onboardState.foodPrefs.indexOf('No Preference');
+        if (noPrefIndex > -1) {
+          onboardState.foodPrefs.splice(noPrefIndex, 1);
+        }
+        
+        const index = onboardState.foodPrefs.indexOf(food);
+        if (index === -1) {
+          onboardState.foodPrefs.push(food);
+        } else {
+          onboardState.foodPrefs.splice(index, 1);
+        }
+        
+        if (onboardState.foodPrefs.length === 0) {
+          onboardState.foodPrefs = ['No Preference'];
+        }
+      }
+      
+      const foods = [
+        { key: 'No Preference', id: 'NoPref' },
+        { key: 'Vegetarian', id: 'Vegetarian' },
+        { key: 'Vegan', id: 'Vegan' },
+        { key: 'Halal', id: 'Halal' },
+        { key: 'Kosher', id: 'Kosher' },
+        { key: 'Gluten-Free', id: 'GlutenFree' }
+      ];
+      
+      foods.forEach(item => {
+        const chip = document.getElementById(`food-chip-${item.id}`);
+        if (chip) {
+          if (onboardState.foodPrefs.includes(item.key)) {
+            chip.className = "onboard-food-chip px-3 py-1.5 text-xs bg-[#14B8A6] text-white border border-[#14B8A6] rounded-xl transition-all cursor-pointer";
+          } else {
+            chip.className = "onboard-food-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer";
+          }
+        }
+      });
+    }
+
+    function toggleOnboardInterest(interest) {
+      const index = onboardState.interests.indexOf(interest);
+      if (index === -1) {
+        onboardState.interests.push(interest);
+      } else {
+        onboardState.interests.splice(index, 1);
+      }
+      
+      const ints = [
+        { key: 'Beaches', id: 'Beaches' },
+        { key: 'Mountains', id: 'Mountains' },
+        { key: 'History', id: 'History' },
+        { key: 'Nightlife', id: 'Nightlife' },
+        { key: 'Food', id: 'Food' },
+        { key: 'Shopping', id: 'Shopping' },
+        { key: 'Wildlife', id: 'Wildlife' },
+        { key: 'Adventure Sports', id: 'AdventureSports' }
+      ];
+      
+      ints.forEach(item => {
+        const chip = document.getElementById(`interest-chip-${item.id}`);
+        if (chip) {
+          if (onboardState.interests.includes(item.key)) {
+            chip.className = "onboard-interest-chip px-3 py-1.5 text-xs bg-[#14B8A6] text-white border border-[#14B8A6] rounded-xl transition-all cursor-pointer";
+          } else {
+            chip.className = "onboard-interest-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer";
+          }
+        }
+      });
+    }
+
+    function toggleOnboardLang(lang) {
+      const index = onboardState.languages.indexOf(lang);
+      if (index === -1) {
+        onboardState.languages.push(lang);
+      } else {
+        onboardState.languages.splice(index, 1);
+      }
+      
+      const langs = ['English', 'Hindi', 'Spanish', 'French', 'Japanese', 'German'];
+      langs.forEach(lg => {
+        const chip = document.getElementById(`lang-chip-${lg}`);
+        if (chip) {
+          if (onboardState.languages.includes(lg)) {
+            chip.className = "onboard-lang-chip px-3 py-1.5 text-xs bg-[#14B8A6] text-white border border-[#14B8A6] rounded-xl transition-all cursor-pointer";
+          } else {
+            chip.className = "onboard-lang-chip px-3 py-1.5 text-xs bg-slate-50 text-slate-600 border border-slate-200 hover:border-[#14B8A6] rounded-xl transition-all cursor-pointer";
+          }
+        }
+      });
+    }
+
+    function setOnboardMobility(mobility) {
+      onboardState.mobility = mobility;
+      const label = document.getElementById('onboard-mobility-label');
+      if (label) label.innerText = mobility;
+      
+      const rates = ['Low', 'Moderate', 'High'];
+      rates.forEach(r => {
+        const btn = document.getElementById(`mobility-btn-${r}`);
+        if (btn) {
+          if (r === mobility) {
+            btn.className = "onboard-mobility-btn py-3 border border-[#14B8A6] bg-[#14B8A6]/5 text-[#14B8A6] rounded-xl text-xs font-semibold cursor-pointer transition-colors focus:outline-none";
+          } else {
+            btn.className = "onboard-mobility-btn py-3 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold bg-white cursor-pointer transition-colors focus:outline-none";
+          }
+        }
+      });
+    }
+
+    function onboardStepBack() {
+      if (onboardState.currentStep > 1) {
+        showOnboardStep(onboardState.currentStep - 1);
+      }
+    }
+
+    function onboardStepNext() {
+      const cur = onboardState.currentStep;
+      
+      if (cur === 1) {
+        const nameVal = document.getElementById('onboard-name').value.trim();
+        const cityVal = document.getElementById('onboard-homecity').value.trim();
+        const dobVal = document.getElementById('onboard-dob').value;
+        
+        if (!nameVal) {
+          showToast("Please write a traveler name to continue.", true);
+          return;
+        }
+        if (!cityVal) {
+          showToast("Please provide your origin home city.", true);
+          return;
+        }
+        
+        onboardState.fullname = nameVal;
+        onboardState.homecity = cityVal;
+        onboardState.dob = dobVal;
+        
+        showOnboardStep(2);
+      } 
+      else if (cur === 2) {
+        if (!onboardState.travelStyle) {
+          showToast("Please select a travel style that matches your vibe.", true);
+          return;
+        }
+        showOnboardStep(3);
+      } 
+      else if (cur === 3) {
+        if (!onboardState.budgetTier) {
+          showToast("Please select your targeted trip budget scale.", true);
+          return;
+        }
+        showOnboardStep(4);
+      } 
+      else if (cur === 4) {
+        if (onboardState.interests.length === 0) {
+          showToast("Please select at least one core travel interest area.", true);
+          return;
+        }
+        showOnboardStep(5);
+      } 
+      else if (cur === 5) {
+        finishOnboarding();
+      }
+    }
+
+    function finishOnboarding() {
+      let cap = 100000;
+      const curr = onboardState.currency;
+      const tier = onboardState.budgetTier;
+      
+      const caps = {
+        'INR': { 'Budget': 30000, 'Mid-range': 100000, 'Luxury': 300000 },
+        'USD': { 'Budget': 500, 'Mid-range': 1500, 'Luxury': 5000 },
+        'EUR': { 'Budget': 450, 'Mid-range': 1350, 'Luxury': 4500 },
+        'GBP': { 'Budget': 400, 'Mid-range': 1200, 'Luxury': 4000 }
+      };
+      
+      if (caps[curr] && caps[curr][tier]) {
+        cap = caps[curr][tier];
+      }
+      
+      const personaMap = {
+        'Adventure': 'backpack',
+        'Relaxation': 'culture',
+        'Cultural': 'culture',
+        'Foodie': 'backpack',
+        'Backpacker': 'backpack',
+        'Luxury': 'luxury'
+      };
+      
+      const mappedPersona = personaMap[onboardState.travelStyle] || 'culture';
+      
+      const profile = {
+        email: localStorage.getItem('currentUserEmail') || 'guest@wanderwise.local',
+        fullname: onboardState.fullname,
+        dob: onboardState.dob,
+        homecity: onboardState.homecity,
+        currency: curr,
+        budgetTier: tier,
+        budgetCap: cap,
+        travelStyle: onboardState.travelStyle,
+        persona: mappedPersona,
+        lodging: onboardState.accommodation.length > 0 ? onboardState.accommodation : ['Hotel'],
+        duration: onboardState.tripDuration || '1 week',
+        diet: onboardState.foodPrefs,
+        interests: onboardState.interests.length > 0 ? onboardState.interests : ['General'],
+        lang: onboardState.languages.length > 0 ? onboardState.languages : ['English'],
+        mobility: onboardState.mobility
+      };
+      
+      const email = profile.email;
+      const profilesRaw = localStorage.getItem('wanderProfiles') || '{}';
+      const profiles = JSON.parse(profilesRaw);
+      profiles[email] = profile;
+      localStorage.setItem('wanderProfiles', JSON.stringify(profiles));
+      
+      localStorage.setItem('userProfile', JSON.stringify(profile));
+      
+      showLoader("Assembling custom travel dashboards...", () => {
+        applyProfileToAppState(profile);
+        
+        document.getElementById('view-onboarding').classList.add('hidden');
+        document.getElementById('view-onboarding').classList.remove('flex');
+        
+        document.getElementById('view-app').classList.remove('hidden');
+        document.getElementById('view-app').classList.add('flex');
+        
+        switchTab('dashboard');
+        
+        showToast("Personal Traveler profile synthesized successfully!");
+      });
+    }
+
+    // Sights local database for exploration filtering
+    const SIGHTS_DATABASE = [
+      { name: 'Kinkaku-ji Temple', tags: 'temple gold zen pavilion kyoto garden', desc: 'A stunning gold-leaf covered Zen temple surrounded by dynamic reflection lakes.' },
+      { name: 'Arashiyama Bamboo Grove', tags: 'bamboo forest walk explore green path', desc: 'Soaring stalks of natural bamboo creating an ethereal walking corridor.' },
+      { name: 'Fushimi Inari-taisha', tags: 'shrine torii gate forest red hike kyoto', desc: 'Thousand vermillion torii gates threading up a sacred mountain path.' },
+      { name: 'Nishiki Food Market', tags: 'market street food sushi shopping skewers central', desc: 'Tasting local octopus skewers, seasonal matcha waffles, and fresh sashimi.' },
+      { name: 'Nijo Castle Palace', tags: 'castle palace nightingale floors shogun history gardens', desc: 'An ancient fortress celebrating the Tokugawa shogunate historical gates.' }
+    ];
+
+    // Response records for AI Concierge simulation
+    const GLOBI_ANSWERS = {
+      weather: "Kyoto Autumn Vibe (October-November): Avg high around 18°C (64°F), dropping to 8°C (46°F) after sunset. Leaves are burning brilliant crimson red, light jacket and thermal layer overlays are best recommended! 🌤",
+      sushi: "Tokyo Street Food Gems: (1) Fresh Salmon Nigiri near Tsukiji Outer Alley, (2) Red bean hot waffles (Taiyaki) at Ningyocho, (3) Ground pork yakitori skewers near Shinjuku railway arches! 🍣",
+      packing: "Emergency Universal packing checklist: [ ] Double Charger & Voltage conversion adapters plug Type A/B, [ ] Physical cash wallet folder (cash reigns supreme here), [ ] Light shell windbreaker, [ ] Micro-fiber hand towels! 🎒",
+      emergency: "Emergency Action Plan: If lost, look for train station offices or local police boxes (Koban). Dial 119 for tourist fire/medical dispatch. Dial 110 for general police line. WanderWise caches backup PDF summaries offline securely. 🚨"
+    };
+
+    // Premium Floating Toast Notification Routine
+    function showToast(message, isError = false) {
+      const container = document.getElementById('toast-wrapper');
+      if (!container) return;
+      
+      const toast = document.createElement('div');
+      toast.className = `flex items-center gap-3 px-4 py-3 bg-white rounded-xl shadow-lg border-l-4 transition-all duration-300 transform translate-x-12 opacity-0 pointer-events-auto max-w-sm shrink-0 ${
+        isError ? 'border-red-500' : 'border-emerald-500'
+      }`;
+      
+      const iconEmoji = isError ? '❌' : '✅';
+      
+      toast.innerHTML = `
+        <span class="text-sm shrink-0">${iconEmoji}</span>
+        <p class="text-[11px] font-semibold text-slate-700 leading-normal">${message}</p>
+        <button class="text-slate-300 hover:text-slate-500 font-bold text-xs pl-2 ml-auto cursor-pointer focus:outline-none" onclick="this.parentElement.remove()">✕</button>
+      `;
+      
+      container.appendChild(toast);
+      
+      // Trigger entry animation
+      setTimeout(() => {
+        toast.classList.remove('translate-x-12', 'opacity-0');
+      }, 50);
+      
+      // Auto-remove
+      setTimeout(() => {
+        toast.classList.add('translate-x-12', 'opacity-0');
+        setTimeout(() => {
+          toast.remove();
+        }, 300);
+      }, 3500);
+    }
+
+    // Initialization workflow
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. Initial renders
+      recalculateExpenses();
+      renderSightsSearch('');
+      setUpIntersectionObserver();
+      
+      // 2. Sticky header scroll monitor
+      window.addEventListener('scroll', handleNavbarScroll);
+
+      // Check for user login and onboarding completeness
+      const userProfile = localStorage.getItem('userProfile');
+      if (userProfile) {
+        const profile = JSON.parse(userProfile);
+        applyProfileToAppState(profile);
+        
+        // Skip landing page entirely and go directly to main tool
+        document.getElementById('view-landing').classList.add('hidden');
+        document.getElementById('view-landing').classList.remove('block');
+        
+        document.getElementById('view-app').classList.remove('hidden');
+        document.getElementById('view-app').classList.add('flex');
+        
+        switchTab('dashboard');
+      }
+    });
+
+    // Landing Header shadow manipulation on scroll
+    function handleNavbarScroll() {
+      const header = document.getElementById('landing-header');
+      const brand = document.getElementById('brand-title');
+      if (header) {
+        if (window.scrollY > 20) {
+          header.classList.add('bg-slate-900/90', 'backdrop-blur-md', 'shadow-md', 'border-white/5');
+          header.classList.remove('border-transparent');
+          if (brand) brand.classList.add('text-[#14B8A6]');
+        } else {
+          header.classList.remove('bg-slate-900/90', 'backdrop-blur-md', 'shadow-md', 'border-white/5');
+          header.classList.add('border-transparent');
+          if (brand) brand.classList.remove('text-[#14B8A6]');
+        }
+      }
+    }
+
+    // Scroll Observer helper for reveal effects
+    function setUpIntersectionObserver() {
+      const observerOptions = {
+        root: null,
+        threshold: 0.1,
+        rootMargin: '0px'
+      };
+
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed');
+            observer.unobserve(entry.target); // Unobserve once triggered
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('.reveal-item').forEach(item => {
+        observer.observe(item);
+      });
+    }
+
+    // Mobile Hamburger Toggle
+    let mobileMenuOpen = false;
+    function toggleMobileMenu() {
+      const nav = document.getElementById('mobile-nav');
+      const icon = document.getElementById('hamburger-icon');
+      mobileMenuOpen = !mobileMenuOpen;
+      if (nav && icon) {
+        if (mobileMenuOpen) {
+          nav.classList.remove('hidden');
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+        } else {
+          nav.classList.add('hidden');
+          icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />';
+        }
+      }
+    }
+
+    // Switch between Main landing page and client app sandbox view
+    function showLoader(txt, callback) {
+      const loader = document.getElementById('app-loader');
+      const text = document.getElementById('loader-text');
+      if (loader && text) {
+        text.innerText = txt;
+        loader.classList.remove('opacity-0', 'pointer-events-none');
+        loader.classList.add('opacity-100');
+        
+        setTimeout(() => {
+          callback();
+          setTimeout(() => {
+            loader.classList.add('opacity-0', 'pointer-events-none');
+            loader.classList.remove('opacity-100');
+          }, 300);
+        }, 800);
+      } else {
+        callback();
+      }
+    }
+
+    function switchToAppShell() {
+      const userProfile = localStorage.getItem('userProfile');
+      if (userProfile) {
+        showLoader("Spinning traveler cloud instances...", () => {
+          document.getElementById('view-landing').classList.add('hidden');
+          document.getElementById('view-landing').classList.remove('block');
+          
+          document.getElementById('view-app').classList.remove('hidden');
+          document.getElementById('view-app').classList.add('flex');
+          
+          switchTab('dashboard');
+        });
+      } else {
+        showLoader("Connecting to login server...", () => {
+          document.getElementById('view-landing').classList.add('hidden');
+          document.getElementById('view-landing').classList.remove('block');
+          
+          document.getElementById('view-login').classList.remove('hidden');
+          document.getElementById('view-login').classList.add('flex');
+          
+          switchAuthTab('signin');
+        });
+      }
+    }
+
+    function logout() {
+      showLoader("Clearing secure traveler cache...", () => {
+        localStorage.removeItem('userProfile');
+        localStorage.removeItem('currentUserEmail');
+        
+        document.getElementById('view-app').classList.add('hidden');
+        document.getElementById('view-app').classList.remove('flex');
+        
+        document.getElementById('view-landing').classList.remove('hidden');
+        document.getElementById('view-landing').classList.add('block');
+        
+        // Return scroll focus
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        showToast("Logged out successfully.");
+      });
+    }
+
+    // Switch switchtabs within App Shell View 2
+    function switchTab(tabId) {
+      state.currentTab = tabId;
+      
+      // Hide all pane blocks
+      const panes = ['dashboard', 'trips', 'explore', 'concierge', 'profile'];
+      panes.forEach(p => {
+        const pNode = document.getElementById(`pane-${p}`);
+        if (pNode) {
+          pNode.classList.add('hidden');
+          pNode.classList.remove('block');
+        }
+        
+        // De-activate sidebar nodes safely
+        const sNode = document.getElementById(`sidebar-tab-dashboard`);
+        const sNode_2 = document.getElementById(`sidebar-tab-trips`);
+        const sNode_3 = document.getElementById(`sidebar-tab-explore`);
+        const sNode_4 = document.getElementById(`sidebar-tab-concierge`);
+        const sNode_5 = document.getElementById(`sidebar-tab-profile`);
+        [sNode, sNode_2, sNode_3, sNode_4, sNode_5].forEach(sn => {
+          if (sn) {
+            sn.classList.remove('nav-active', 'text-[#14B8A6]', 'bg-white/10', 'border-l-4', 'border-[#14B8A6]', 'pl-3');
+            sn.classList.add('text-slate-500');
+          }
+        });
+
+        // De-activate mobile nodes
+        const mNode = document.getElementById(`mobile-tab-${p}`);
+        if (mNode) mNode.classList.remove('text-[#14B8A6]');
+      });
+
+      // Show active pane
+      const activePane = document.getElementById(`pane-${tabId}`);
+      if (activePane) {
+        activePane.classList.remove('hidden');
+        activePane.classList.add('block');
+      }
+
+      // Sidebar highlight active tabs using theme standard nav-active
+      const activeSidebarBtn = document.getElementById(`sidebar-tab-${tabId}`);
+      if (activeSidebarBtn) {
+        activeSidebarBtn.classList.add('nav-active', 'text-[#14B8A6]');
+        activeSidebarBtn.classList.remove('text-slate-500');
+      }
+
+      // Update dynamic page header label
+      const headerTitleNode = document.getElementById('app-header-title');
+      if (headerTitleNode) {
+        const titlePresets = {
+          dashboard: 'Dashboard Overview',
+          trips: 'My Travel Expeditions',
+          explore: 'Interactive Discovery Map',
+          concierge: 'AI Concierge Helper',
+          profile: 'Traveler Persona Profile'
+        };
+        headerTitleNode.innerText = titlePresets[tabId] || 'Travel Platform';
+      }
+
+      // Mobile bottom bar highlight active tabs
+      const activeMobileBtn = document.getElementById(`mobile-tab-${tabId}`);
+      if (activeMobileBtn) {
+        activeMobileBtn.classList.add('text-[#14B8A6]');
+      }
+
+      // Custom focus setup
+      if (tabId === 'explore') {
+        renderSightsSearch('');
+      }
+    }
+
+    // Dynamic Expense Adder Calculations
+    function recalculateExpenses() {
+      const expenses = state.budget.expenses;
+      let spent = 0;
+      let foodAlloc = 0;
+      let lodgingAlloc = 0;
+      let actAlloc = 0;
+      let transAlloc = 0;
+
+      expenses.forEach(e => {
+        spent += e.amount;
+        if (e.category === 'Food') foodAlloc += e.amount;
+        else if (e.category === 'Lodging') lodgingAlloc += e.amount;
+        else if (e.category === 'Activities') actAlloc += e.amount;
+        else if (e.category === 'Transport') transAlloc += e.amount;
+      });
+
+      const remaining = Math.max(0, state.budget.totalCap - spent);
+      const spentPercent = (spent / state.budget.totalCap) * 100;
+
+      // Update static dashboard numbers
+      const spentNode = document.getElementById('budget-spent');
+      const remNode = document.getElementById('budget-remaining');
+      if (spentNode) spentNode.innerText = `$${spent}`;
+      if (remNode) remNode.innerText = `$${remaining}`;
+
+      // Update concentric budget scale ring
+      const progressCirc = document.getElementById('budget-circ-prog');
+      const progressPercentStr = document.getElementById('budget-circ-percentage');
+      if (progressCirc && progressPercentStr) {
+        const radius = 40;
+        const circumference = 2 * Math.PI * radius; // Around 251.2
+        const clampedPercent = Math.min(100, Math.max(0, spentPercent));
+        const finalOffset = circumference - (clampedPercent / 100) * circumference;
+        
+        progressCirc.style.strokeDashoffset = finalOffset;
+        progressCirc.style.strokeDasharray = circumference;
+        progressPercentStr.innerText = `${Math.round(clampedPercent)}%`;
+      }
+
+      // Update raw categories in dashboard checklist breakdown
+      const fN = document.getElementById('percent-food');
+      const lN = document.getElementById('percent-lodging');
+      const aN = document.getElementById('percent-[#FF8E72]');
+      const tN = document.getElementById('percent-transport');
+      if (fN) fN.innerText = `$${foodAlloc} (${Math.round((foodAlloc/state.budget.totalCap)*100)}%)`;
+      if (lN) lN.innerText = `$${lodgingAlloc} (${Math.round((lodgingAlloc/state.budget.totalCap)*100)}%)`;
+      if (aN) aN.innerText = `$${actAlloc} (${Math.round((actAlloc/state.budget.totalCap)*100)}%)`;
+      if (tN) tN.innerText = `$${transAlloc} (${Math.round((transAlloc/state.budget.totalCap)*100)}%)`;
+    }
+
+    // Form submission callback
+    function addExpense(event) {
+      event.preventDefault();
+      const title = document.getElementById('exp-title').value;
+      const amount = parseInt(document.getElementById('exp-amount').value);
+      const category = document.getElementById('exp-cat').value;
+
+      if (!title || isNaN(amount) || amount <= 0) return;
+
+      const newExp = {
+        id: Date.now(),
+        title,
+        amount,
+        category
+      };
+
+      state.budget.expenses.push(newExp);
+      recalculateExpenses();
+
+      // Clear Form values
+      document.getElementById('exp-title').value = '';
+      document.getElementById('exp-amount').value = '';
+      
+      // Toast notification alert
+      alert(`Outlay recorded: "${title}" ($${amount}) factored into active travel charts!`);
+    }
+
+    function resetBudgetDemo() {
+      state.budget.expenses = [
+        { id: 1, title: 'Kyoto Palace Entry Tickets', amount: 45, category: 'Activities' },
+        { id: 2, title: 'Traditional Ramen Menu', amount: 28, category: 'Food' },
+        { id: 3, title: 'Boutique Ryokan Resort', amount: 180, category: 'Lodging' },
+        { id: 4, title: 'Osaka Bullet Train Sub', amount: 110, category: 'Transport' }
+      ];
+      recalculateExpenses();
+      alert("Simulated expense matrix restored safely to original values.");
+    }
+
+    // Simulated Offline Mode Banner Toggle
+    function toggleOfflineSim() {
+      state.offlineActive = !state.offlineActive;
+      const badge = document.getElementById('offline-badge');
+      const button = document.getElementById('btn-offline-mode');
+      if (badge && button) {
+        if (state.offlineActive) {
+          badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-[#FF8E72] animate-ping"></span> Offline Mode Cached';
+          badge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-orange-100 text-[#FF8E72] text-[10px] font-bold uppercase tracking-wider";
+          button.innerText = "📶 Enable Sync";
+          alert("WanderWise simulated offline mode active! Data writes are safely stored inside LocalStorage.");
+        } else {
+          badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-[#14B8A6] animate-ping"></span> Live Cloud Sync';
+          badge.className = "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#14B8A6]/10 text-[#14B8A6] text-[10px] font-bold uppercase tracking-wider";
+          button.innerText = "📶 Toggle Cache";
+          alert("Connected to cloud servers. Sync process successful!");
+        }
+      }
+    }
+
+    // Persona vibe custom shifts
+    function updatePersona(val) {
+      state.persona = val;
+      const badge = document.getElementById('persona-badge');
+      const label = document.getElementById('lbl-persona');
+      const desc = document.getElementById('lbl-persona-desc');
+      const profileLabel = document.getElementById('profile-persona-label');
+      const sidebarPersonaText = document.getElementById('sidebar-travel-persona-text');
+      
+      if (badge && label && desc) {
+        if (val === 'culture') {
+          badge.innerText = '🎴';
+          label.innerText = 'Slow Culture Nomad';
+          desc.innerText = 'Optimizing layout guides for quiet temple schedules and historic walking pathways.';
+          if (profileLabel) profileLabel.innerText = 'Slow Culture Explorer';
+          if (sidebarPersonaText) sidebarPersonaText.innerText = 'Slow Culture Nomad';
+        } else if (val === 'backpack') {
+          badge.innerText = '🎒';
+          label.innerText = 'Carefree Backpacker';
+          desc.innerText = 'Prioritizing local food counters, shared hostels, and free cultural park entrances.';
+          if (profileLabel) profileLabel.innerText = 'Budget Backpacker';
+          if (sidebarPersonaText) sidebarPersonaText.innerText = 'Carefree Backpacker';
+        } else if (val === 'luxury') {
+          badge.innerText = '✈️';
+          label.innerText = 'Slow Luxury Wanderer';
+          desc.innerText = 'Focusing on Michelin sushi, luxury express trains, and high-end thermal bath entries.';
+          if (profileLabel) profileLabel.innerText = 'Premium Jetsetter';
+          if (sidebarPersonaText) sidebarPersonaText.innerText = 'Slow Luxury Wanderer';
+        }
+      }
+    }
+
+    // Global Interactive User name input bindings
+    function updateGlobalUserName(value) {
+      if (!value.trim()) return;
+      state.user = value;
+      
+      // Update sidebar greeting
+      const sidebarNick = document.getElementById('sidebar-user-name');
+      const topGreeting = document.getElementById('dash-greeting');
+      if (sidebarNick) sidebarNick.innerText = value;
+      if (topGreeting) topGreeting.innerText = `Adventure Overview`;
+      
+      // Update avatar letter
+      const initials = value.substring(0, 2).toUpperCase();
+      const sidebarAvatar = document.getElementById('sidebar-avatar-initials');
+      const profileAvatar = document.getElementById('profile-avatar-node');
+      if (sidebarAvatar) sidebarAvatar.innerText = initials;
+      if (profileAvatar) profileAvatar.innerText = initials;
+    }
+
+    // Sight search layout filter list
+    function filterSights() {
+      const input = document.getElementById('sight-search-input');
+      if (input) {
+        renderSightsSearch(input.value);
+      }
+    }
+
+    function renderSightsSearch(query) {
+      const container = document.getElementById('explore-search-results');
+      if (!container) return;
+
+      const listHTML = SIGHTS_DATABASE.map(sight => {
+        const matches = query === '' || sight.tags.toLowerCase().includes(query.toLowerCase()) || sight.name.toLowerCase().includes(query.toLowerCase());
+        
+        if (!matches) return '';
+
+        return `
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-[#14B8A6]/20 transition-colors flex flex-col justify-between">
+            <div class="space-y-1.5">
+              <span class="text-[9px] font-bold px-1.5 py-0.5 bg-[#14B8A6]/10 text-[#14B8A6] rounded uppercase">sight</span>
+              <h5 class="text-xs font-bold text-slate-800">${sight.name}</h5>
+              <p class="text-[11px] text-slate-400 leading-normal">${sight.desc}</p>
+            </div>
+            <button onclick="alert('Adding ${sight.name} to Kyoto Active Timeline slots.')" class="mt-3 py-1.5 px-3 rounded text-[10px] bg-white border border-slate-200 hover:border-[#14B8A6] font-semibold text-slate-700 hover:text-[#14B8A6] transition-all text-center">
+              Add Slot
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = listHTML || '<div class="col-span-2 text-center text-xs text-slate-400 py-6">No matches found in Kyoto library. Try temple or market!</div>';
+    }
+
+    // AI Concierge Chatbot Simulator Action triggers
+    function triggerQuickResponse(category) {
+      const scroller = document.getElementById('chat-scroller');
+      const messagesContainer = document.getElementById('chat-messages-append');
+      const bubble = document.getElementById('chat-typing-bubble');
+
+      if (!scroller || !messagesContainer || !bubble) return;
+
+      // 1. Append user choice
+      let label = "";
+      if (category === 'weather') label = "What's the Kyoto Autumn weather outlook?";
+      else if (category === 'sushi') label = "Tell me some local Street Food gems!";
+      else if (category === 'packing') label = "What packing essentials do I need?";
+      else if (category === 'emergency') label = "Show me local Emergency Protocols";
+
+      const userMsgNode = document.createElement('div');
+      userMsgNode.className = "flex justify-end gap-3 max-w-[85%] ml-auto text-right";
+      userMsgNode.innerHTML = `
+        <div class="p-3 bg-[#14B8A6] text-white rounded-l-xl rounded-tr-xl border border-[#14B8A6]/20 shadow-sm leading-relaxed">
+          ${label}
+        </div>
+        <div class="w-7 h-7 rounded-full bg-slate-800 text-white flex-shrink-0 flex items-center justify-center font-bold text-[10px]" id="user-avatar-initials">${state.user.substring(0, 2).toUpperCase()}</div>
+      `;
+      messagesContainer.appendChild(userMsgNode);
+      scroller.scrollTop = scroller.scrollHeight;
+
+      // 2. Play Globi Typing Indicator
+      bubble.classList.remove('hidden');
+
+      setTimeout(() => {
+        bubble.classList.add('hidden');
+        
+        // Append actual response
+        const answer = GLOBI_ANSWERS[category] || "That sounds fascinating! Ask me any Kyoto coordinates question.";
+        const globiMsgNode = document.createElement('div');
+        globiMsgNode.className = "flex gap-3 max-w-[80%] animate-fade";
+        globiMsgNode.innerHTML = `
+          <div class="w-7 h-7 rounded-full bg-[#14B8A6] flex-shrink-0 flex items-center justify-center text-xs">🐘</div>
+          <div class="p-3 bg-white rounded-r-xl rounded-bl-xl border border-slate-100 shadow-sm leading-relaxed text-slate-700">
+            ${answer}
+          </div>
+        `;
+        messagesContainer.appendChild(globiMsgNode);
+        scroller.scrollTop = scroller.scrollHeight;
+      }, 900);
+    }
+
+    // Submit Custom queries inside chat input
+    function submitCustomChat(event) {
+      event.preventDefault();
+      const input = document.getElementById('chat-input');
+      const messagesContainer = document.getElementById('chat-messages-append');
+      const scroller = document.getElementById('chat-scroller');
+      const bubble = document.getElementById('chat-typing-bubble');
+
+      if (!input || !input.value.trim() || !messagesContainer || !scroller || !bubble) return;
+
+      const userText = input.value.trim();
+
+      // Clear input
+      input.value = '';
+
+      // Append User message node
+      const userMsgNode = document.createElement('div');
+      userMsgNode.className = "flex justify-end gap-3 max-w-[85%] ml-auto text-right";
+      userMsgNode.innerHTML = `
+        <div class="p-3 bg-[#14B8A6] text-white rounded-l-xl rounded-tr-xl border border-[#14B8A6]/20 shadow-sm leading-relaxed">
+          ${userText}
+        </div>
+        <div class="w-7 h-7 rounded-full bg-slate-800 text-white flex-shrink-0 flex items-center justify-center font-bold text-[10px]">${state.user.substring(0, 2).toUpperCase()}</div>
+      `;
+      messagesContainer.appendChild(userMsgNode);
+      scroller.scrollTop = scroller.scrollHeight;
+
+      // Play Globi Typing Indicator
+      bubble.classList.remove('hidden');
+
+      setTimeout(() => {
+        bubble.classList.add('hidden');
+        
+        // Append response dialog
+        const globiMsgNode = document.createElement('div');
+        globiMsgNode.className = "flex gap-3 max-w-[80%]";
+        globiMsgNode.innerHTML = `
+          <div class="w-7 h-7 rounded-full bg-[#14B8A6] flex-shrink-0 flex items-center justify-center text-xs">🐘</div>
+          <div class="p-3 bg-white rounded-r-xl rounded-bl-xl border border-slate-100 shadow-sm leading-relaxed text-[#FF8E72]">
+            <strong>Globi response:</strong> That's an excellent custom inquiry! Since I'm running in high-contrast simulated mode, I will interface with real-time vector systems to parse detailed coordinates shortly. Try clicking one of the preloaded weather, street-food, or emergency quick bubbles above to see me answer immediately!
+          </div>
+        `;
+        messagesContainer.appendChild(globiMsgNode);
+        scroller.scrollTop = scroller.scrollHeight;
+      }, 1000);
+    }
+  </script>
+
+</body>
+</html>
